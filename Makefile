@@ -15,6 +15,10 @@ BRANCH ?= manual_branch
 BUILD_TIME := $(shell date +%s)
 BUILDER ?= $(shell hostname)
 
+IMAGE_BASE_NAME := docker.io/akaddr/$(TARGET)
+IMAGE_TAG ?= v0.1.0
+IMAGE_NAME := $(IMAGE_BASE_NAME):$(IMAGE_TAG)
+
 MOCKS_DIR := mocks
 MOCKGEN_INSTALL_LOCK := mockgen_install.lock
 MOCKGEN_LOCK := mockgen.lock
@@ -48,13 +52,16 @@ build:
 		-X gitlab.rdp.ru/tt/cmetrics/pkg/buildinfo.builder=$(BUILDER)" -o bin/$(TARGET) ./cmd/$(TARGET)
 
 image:
-	buildah bud --squash --no-cache --pull \
-		-f deployments/docker/Dockerfile \
+	docker build \
+		-f deploy/Dockerfile \
 		--tag $(IMAGE_NAME) \
 		--build-arg=VERSION=$(VERSION) \
 		--build-arg=COMMIT=$(COMMIT) \
 		--build-arg=BRANCH=$(BRANCH) \
 		--build-arg=BUILDER=$(BUILDER) .
+
+push:
+	docker push $(IMAGE_NAME)
 
 ################################################################################
 ### Generators

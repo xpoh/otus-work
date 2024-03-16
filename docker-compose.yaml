@@ -10,5 +10,10 @@ services:
 #      - ./data:/var/lib/postgresql/data:rw
       - ./scripts/database/:/docker-entrypoint-initdb.d
     ports:
-    - 54320:5432
+    - "54320:5432"
     init: true
+
+  service:
+    image: docker.io/akaddr/net:v0.1.0
+    ports:
+      - "8000:8000"

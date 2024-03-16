@@ -10,6 +10,7 @@
 package openapi
 
 import (
+	"github.com/xpoh/otus-work/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -32,7 +33,7 @@ func NewRouter(handleFunctions ApiHandleFunctions) *gin.Engine {
 	return NewRouterWithGinEngine(gin.Default(), handleFunctions)
 }
 
-// NewRouter add routes to existing gin engine.
+// NewRouterWithGinEngine NewRouter add routes to existing gin engine.
 func NewRouterWithGinEngine(router *gin.Engine, handleFunctions ApiHandleFunctions) *gin.Engine {
 	for _, route := range getRoutes(handleFunctions) {
 		if route.HandlerFunc == nil {
@@ -55,14 +56,14 @@ func NewRouterWithGinEngine(router *gin.Engine, handleFunctions ApiHandleFunctio
 	return router
 }
 
-// Default handler for not yet implemented routes
+// DefaultHandleFunc Default handler for not yet implemented routes
 func DefaultHandleFunc(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 type ApiHandleFunctions struct {
 	// Routes for the DefaultAPI part of the API
-	DefaultAPI DefaultAPI
+	DefaultAPI service.DefaultAPI
 }
 
 func getRoutes(handleFunctions ApiHandleFunctions) []Route {
