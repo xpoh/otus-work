@@ -66,3 +66,7 @@ func (i *Instance) Disconnect(ctx context.Context) error {
 
 	return nil
 }
+
+func (i *Instance) GetConn() *pgx.Conn {
+	return i.conn
+}

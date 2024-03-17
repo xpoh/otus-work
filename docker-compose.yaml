@@ -12,8 +12,18 @@ services:
     ports:
     - "5432:5432"
     init: true
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   service:
-    image: docker.io/akaddr/net:v0.1.0
+    image: docker.io/akaddr/net:v0.1.1
+    environment:
+      - DB_HOST=db
     ports:
       - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy

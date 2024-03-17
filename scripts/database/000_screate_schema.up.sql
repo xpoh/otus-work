@@ -22,18 +22,13 @@ CREATE TABLE IF NOT EXISTS "Post" (
 
 CREATE TABLE IF NOT EXISTS "User" (
                         "id" uuid PRIMARY KEY DEFAULT (public.uuid_generate_v4()),
+                        "login" TEXT NOT NULL,
+                        "pass_hash" TEXT NOT NULL,
                         "first_name" TEXT DEFAULT null,
                         "second_name" TEXT DEFAULT null,
                         "birthdate" DATE DEFAULT null,
                         "biography" TEXT DEFAULT null,
                         "city" TEXT DEFAULT null
-);
-
-CREATE TABLE IF NOT EXISTS "Auth" (
-                        "id" uuid PRIMARY KEY DEFAULT (public.uuid_generate_v4()),
-                        "user_id" uuid NOT NULL,
-                        "login" TEXT NOT NULL,
-                        "pass_hash" TEXT NOT NULL
 );
 
 COMMENT ON COLUMN "DialogMessage"."from_user_id" IS 'Идентификатор пользователя';
@@ -63,5 +58,3 @@ ALTER TABLE "DialogMessage" ADD FOREIGN KEY ("from_user_id") REFERENCES "User" (
 ALTER TABLE "DialogMessage" ADD FOREIGN KEY ("to_user_id") REFERENCES "User" ("id");
 
 ALTER TABLE "Post" ADD FOREIGN KEY ("author_user_id") REFERENCES "User" ("id");
-
-ALTER TABLE "Auth" ADD FOREIGN KEY ("user_id") REFERENCES "User" ("id");

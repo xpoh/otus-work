@@ -17,7 +17,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/xpoh/otus-work/internal/config"
-	"github.com/xpoh/otus-work/internal/service"
 	sw "github.com/xpoh/otus-work/pkg/api"
 )
 
@@ -39,7 +38,7 @@ func main() {
 	}(db, ctx)
 
 	routes := sw.ApiHandleFunctions{
-		DefaultAPI: service.NewInstance(db, cfg),
+		DefaultAPI: sw.NewInstance(db, cfg),
 	}
 
 	log.Printf("Server started")

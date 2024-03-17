@@ -16,7 +16,7 @@ BUILD_TIME := $(shell date +%s)
 BUILDER ?= $(shell hostname)
 
 IMAGE_BASE_NAME := docker.io/akaddr/$(TARGET)
-IMAGE_TAG ?= v0.1.0
+IMAGE_TAG ?= v0.1.1
 IMAGE_NAME := $(IMAGE_BASE_NAME):$(IMAGE_TAG)
 
 MOCKS_DIR := mocks
