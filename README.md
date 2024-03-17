@@ -3,7 +3,7 @@
 ```shell
 docker compose up -d
 ```
-Адрес по умолчанию localhost:8080
+Адрес по умолчанию localhost:8000
 
 
 # Домашнее задание
