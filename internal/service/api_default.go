@@ -11,84 +11,96 @@ package service
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/xpoh/otus-work/internal/config"
+	"github.com/xpoh/otus-work/internal/database"
 )
 
-type DefaultAPI struct{}
+type Instance struct {
+	db  *database.Instance
+	cfg *config.Config
+}
+
+func NewInstance(db *database.Instance, cfg *config.Config) *Instance {
+	return &Instance{
+		db:  db,
+		cfg: cfg,
+	}
+}
 
 // DialogUserIdListGet Get /dialog/:user_id/list
-func (api *DefaultAPI) DialogUserIdListGet(c *gin.Context) {
+func (api *Instance) DialogUserIdListGet(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
 
 // DialogUserIdSendPost Post /dialog/:user_id/send
-func (api *DefaultAPI) DialogUserIdSendPost(c *gin.Context) {
+func (api *Instance) DialogUserIdSendPost(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
 
 // FriendDeleteUserIdPut Put /friend/delete/:user_id
-func (api *DefaultAPI) FriendDeleteUserIdPut(c *gin.Context) {
+func (api *Instance) FriendDeleteUserIdPut(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
 
 // FriendSetUserIdPut Put /friend/set/:user_id
-func (api *DefaultAPI) FriendSetUserIdPut(c *gin.Context) {
+func (api *Instance) FriendSetUserIdPut(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
 
 // LoginPost Post /login
-func (api *DefaultAPI) LoginPost(c *gin.Context) {
+func (api *Instance) LoginPost(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
 
 // PostCreatePost Post /post/create
-func (api *DefaultAPI) PostCreatePost(c *gin.Context) {
+func (api *Instance) PostCreatePost(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
 
 // PostDeleteIdPut Put /post/delete/:id
-func (api *DefaultAPI) PostDeleteIdPut(c *gin.Context) {
+func (api *Instance) PostDeleteIdPut(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
 
 // PostFeedGet Get /post/feed
-func (api *DefaultAPI) PostFeedGet(c *gin.Context) {
+func (api *Instance) PostFeedGet(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
 
 // PostGetIdGet Get /post/get/:id
-func (api *DefaultAPI) PostGetIdGet(c *gin.Context) {
+func (api *Instance) PostGetIdGet(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
 
 // PostUpdatePut Put /post/update
-func (api *DefaultAPI) PostUpdatePut(c *gin.Context) {
+func (api *Instance) PostUpdatePut(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
 
 // UserGetIdGet Get /user/get/:id
-func (api *DefaultAPI) UserGetIdGet(c *gin.Context) {
+func (api *Instance) UserGetIdGet(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
 
 // UserRegisterPost Post /user/register
-func (api *DefaultAPI) UserRegisterPost(c *gin.Context) {
+func (api *Instance) UserRegisterPost(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
 
 // UserSearchGet Get /user/search
-func (api *DefaultAPI) UserSearchGet(c *gin.Context) {
+func (api *Instance) UserSearchGet(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }

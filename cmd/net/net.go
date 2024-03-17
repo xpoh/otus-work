@@ -10,20 +10,54 @@
 package main
 
 import (
-	"log"
+	"context"
+	"fmt"
+	"github.com/xpoh/otus-work/internal/database"
+	"os"
 
-	// WARNING!
-	// Pass --git-repo-id and --git-user-id properties when generating the code
-	//
+	log "github.com/sirupsen/logrus"
+	"github.com/xpoh/otus-work/internal/config"
+	"github.com/xpoh/otus-work/internal/service"
 	sw "github.com/xpoh/otus-work/pkg/api"
 )
 
 func main() {
-	routes := sw.ApiHandleFunctions{}
+	cfg := config.New()
+	initLogger(cfg)
+
+	ctx := context.Background()
+
+	db := database.NewInstance(cfg)
+	if err := db.Run(ctx); err != nil {
+		log.Panic(err)
+	}
+	defer func(db *database.Instance, ctx context.Context) {
+		err := db.Stop(ctx)
+		if err != nil {
+			log.Error(err)
+		}
+	}(db, ctx)
+
+	routes := sw.ApiHandleFunctions{
+		DefaultAPI: service.NewInstance(db, cfg),
+	}
 
 	log.Printf("Server started")
 
 	router := sw.NewRouter(routes)
 
-	log.Fatal(router.Run(":8000"))
+	log.Panic(router.Run(fmt.Sprintf("%s:%s", cfg.GetHost(), cfg.GetPort())))
+}
+
+func initLogger(cfg *config.Config) {
+	log.SetReportCaller(true)
+	log.SetOutput(os.Stdout)
+
+	log.SetLevel(cfg.GetLogLevel())
+
+	log.SetFormatter(
+		&log.TextFormatter{
+			FullTimestamp: true,
+		},
+	)
 }

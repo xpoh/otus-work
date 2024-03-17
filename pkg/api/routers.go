@@ -10,10 +10,10 @@
 package openapi
 
 import (
-	"github.com/xpoh/otus-work/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/xpoh/otus-work/internal/service"
 )
 
 // Route is the information for every URI.
@@ -63,7 +63,7 @@ func DefaultHandleFunc(c *gin.Context) {
 
 type ApiHandleFunctions struct {
 	// Routes for the DefaultAPI part of the API
-	DefaultAPI service.DefaultAPI
+	DefaultAPI *service.Instance
 }
 
 func getRoutes(handleFunctions ApiHandleFunctions) []Route {
