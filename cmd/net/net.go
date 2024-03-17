@@ -12,11 +12,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/xpoh/otus-work/internal/database"
 	"os"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/xpoh/otus-work/internal/config"
+	"github.com/xpoh/otus-work/internal/database"
 	sw "github.com/xpoh/otus-work/pkg/api"
 )
 

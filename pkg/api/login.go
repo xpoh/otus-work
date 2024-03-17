@@ -19,10 +19,12 @@ func passHash(pass string) string {
 func (i *Instance) login(ctx context.Context, id string, password string) (string, error) {
 	hash := passHash(password)
 	c := i.db.GetConn()
+
 	rows, err := c.Query(ctx, "SELECT count(1) FROM User WHERE pass_hash=$1 AND id=$2", hash, id)
 	if err != nil {
 		return "", err
 	}
+
 	defer rows.Close()
 
 	var count uint64

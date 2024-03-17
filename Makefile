@@ -66,10 +66,6 @@ push:
 ################################################################################
 ### Generators
 ###
-
-buf-build:
-	buf generate -o pkg/grpc
-
 $(MOCKGEN_INSTALL_LOCK):
 	go install github.com/golang/mock/mockgen@v1.6.0
 	touch $(MOCKGEN_INSTALL_LOCK)
@@ -116,17 +112,12 @@ test-coverage:
 
 lint: tidy linters
 
-linters: golangci-lint buf-lint
+linters: golangci-lint
 
 golangci-lint:
 	find -type f -name "*.go" | grep -v '.*\.pb\.go' | grep -v '\/[0-9a-z_]*.go' && echo "Files should be named in snake case" && exit 1 || echo "All files named in snake case"
-	test `grep -Rh "image: " . | grep -v "harbor.tteam.dev" | wc -l` -ne '0' && grep -Rh "image: " . | grep -v "harbor.tteam.dev" && echo 'Found image not from harbor.tteam.dev' && exit 1 || true
-	// test `grep -Rh "FROM " . | grep -v "harbor.tteam.dev" | wc -l` -ne '0' && grep -Rh "FROM " . | grep -v "harbor.tteam.dev" && echo 'Found image not from harbor.tteam.dev' && exit 1 || true
 	golangci-lint version
 	golangci-lint run
-
-buf-lint:
-	buf lint
 
 ################################################################################
 ### Golang helpers

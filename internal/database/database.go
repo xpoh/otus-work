@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+
 	_ "github.com/golang-migrate/migrate/v4/database/postgres" // for postgres supporting
 	_ "github.com/golang-migrate/migrate/v4/source/file"       // for file format supporting
 	"github.com/jackc/pgx/v4"

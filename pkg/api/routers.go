@@ -38,6 +38,7 @@ func NewRouterWithGinEngine(router *gin.Engine, handleFunctions ApiHandleFunctio
 		if route.HandlerFunc == nil {
 			route.HandlerFunc = DefaultHandleFunc
 		}
+
 		switch route.Method {
 		case http.MethodGet:
 			router.GET(route.Pattern, route.HandlerFunc)
