@@ -17,7 +17,7 @@ func (i *Instance) register(ctx context.Context, user UserRegisterPostRequest) (
 
 	_, err := c.Exec(
 		ctx,
-		"INSERT INTO User VALUES ($1,$2,$3,$4,$5,$6,$7)",
+		"INSERT INTO postgres.public.\"User\" VALUES ($1,$2,$3,$4,$5,$6,$7)",
 		newID,
 		hash,
 		user.FirstName,
@@ -30,16 +30,18 @@ func (i *Instance) register(ctx context.Context, user UserRegisterPostRequest) (
 		return "", err
 	}
 
-	return hash, nil
+	return newID, nil
 }
 
 // UserRegisterPost Post /user/register
 func (i *Instance) UserRegisterPost(c *gin.Context) {
 	request := UserRegisterPostRequest{}
 
-	if err := c.Bind(request); err != nil {
+	if err := c.Bind(&request); err != nil {
 		c.JSON(400, gin.H{"status": "Невалидные данные"})
 		logrus.Debugf("Невалидные данные: %v", c.Request)
+
+		return
 	}
 
 	logrus.Debugf("Request: %v", request)
@@ -48,6 +50,8 @@ func (i *Instance) UserRegisterPost(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
 		logrus.Errorf("Internal Server Error: %v", err)
+
+		return
 	}
 
 	response := UserRegisterPost200Response{UserId: id}

@@ -21,7 +21,7 @@ type Config struct {
 
 type EnvSetting struct {
 	Host string `env:"HOST" env-default:"0.0.0.0" env-description:"Host"`
-	Port string `env:"HTTP_PORT" env-default:"8080" env-description:"Http port"`
+	Port string `env:"HTTP_PORT" env-default:"8000" env-description:"Http port"`
 
 	DBHost     string `env:"DB_HOST" env-default:"127.0.0.1" env-description:"IP or hostname where DB resides"`
 	DBPort     uint16 `env:"DB_PORT" env-default:"5432" env-description:"DB's port"`

@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS "User" (
                         "pass_hash" TEXT NOT NULL,
                         "first_name" TEXT DEFAULT null,
                         "second_name" TEXT DEFAULT null,
-                        "birthdate" DATE DEFAULT null,
+                        "birthdate" TEXT DEFAULT null,
                         "biography" TEXT DEFAULT null,
                         "city" TEXT DEFAULT null
 );

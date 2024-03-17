@@ -20,7 +20,7 @@ func (i *Instance) login(ctx context.Context, id string, password string) (strin
 	hash := passHash(password)
 	c := i.db.GetConn()
 
-	rows, err := c.Query(ctx, "SELECT count(1) FROM User WHERE pass_hash=$1 AND id=$2", hash, id)
+	rows, err := c.Query(ctx, "SELECT count(1) FROM postgres.public.\"User\" WHERE pass_hash=$1 AND id=$2", hash, id)
 	if err != nil {
 		return "", err
 	}
@@ -42,9 +42,11 @@ func (i *Instance) login(ctx context.Context, id string, password string) (strin
 func (i *Instance) LoginPost(c *gin.Context) {
 	request := LoginPostRequest{}
 
-	if err := c.Bind(request); err != nil {
+	if err := c.Bind(&request); err != nil {
 		c.JSON(400, gin.H{"status": "Невалидные данные"})
-		logrus.Debugf("Невалидные данные: %v", c.Request)
+		logrus.Errorf("Невалидные данные: %v", c.Request)
+
+		return
 	}
 
 	logrus.Debugf("Request: %v", request)
@@ -53,6 +55,8 @@ func (i *Instance) LoginPost(c *gin.Context) {
 	if err != nil {
 		c.JSON(404, gin.H{"status": "Пользователь не найден"})
 		logrus.Debugf("Пользователь не найден: %v", c.Request)
+
+		return
 	}
 
 	response := LoginPost200Response{Token: hash}
