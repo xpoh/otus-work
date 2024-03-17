@@ -1,0 +1,30 @@
+Table "DialogMessage" {
+  "id" uuid [primary key, default: `public.uuid_generate_v4()`]
+  "from_user_id" uuid [not null, note: 'Идентификатор пользователя', ref: - User.id]
+  "to_user_id" uuid [not null, note: 'Идентификатор пользователя', ref: - User.id]
+  "text" TEXT [not null, note: 'Текст сообщения']
+}
+
+Table "Post" {
+  "id" uuid [primary key, default: `public.uuid_generate_v4()`]
+  "text" TEXT [default: NULL, note: 'Текст поста']
+  "author_user_id" uuid [not null, note: 'Идентификатор пользователя', ref: > User.id]
+  Note: 'Пост пользователя'
+}
+
+
+Table "User" {
+  "id" uuid [primary key, default: `public.uuid_generate_v4()`]
+  "first_name" TEXT [default: NULL, note: 'Имя']
+  "second_name" TEXT [default: NULL, note: 'Фамилия']
+  "birthdate" DATE [default: NULL, note: 'Дата рождения']
+  "biography" TEXT [default: NULL, note: 'Интересы']
+  "city" TEXT [default: NULL, note: 'Город']
+}
+
+Table "Auth" {
+  "id" uuid [primary key, default: `public.uuid_generate_v4()`]
+  "user_id" uuid [not null, ref: > User.id]
+  "login" TEXT [not null]
+  "pass_hash" TEXT [not null]
+}
