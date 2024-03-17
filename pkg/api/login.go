@@ -16,10 +16,10 @@ func passHash(pass string) string {
 	return hex.EncodeToString(hash.Sum(nil))
 }
 
-func (i *Instance) login(ctx context.Context, user string, password string) (string, error) {
+func (i *Instance) login(ctx context.Context, id string, password string) (string, error) {
 	hash := passHash(password)
 	c := i.db.GetConn()
-	rows, err := c.Query(ctx, "SELECT count(1) FROM User WHERE pass_hash=$1 AND login=$2", hash, user)
+	rows, err := c.Query(ctx, "SELECT count(1) FROM User WHERE pass_hash=$1 AND id=$2", hash, id)
 	if err != nil {
 		return "", err
 	}

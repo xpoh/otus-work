@@ -22,7 +22,6 @@ CREATE TABLE IF NOT EXISTS "Post" (
 
 CREATE TABLE IF NOT EXISTS "User" (
                         "id" uuid PRIMARY KEY DEFAULT (public.uuid_generate_v4()),
-                        "login" TEXT NOT NULL,
                         "pass_hash" TEXT NOT NULL,
                         "first_name" TEXT DEFAULT null,
                         "second_name" TEXT DEFAULT null,

@@ -9,25 +9,24 @@ import (
 )
 
 func (i *Instance) register(ctx context.Context, user UserRegisterPostRequest) (string, error) {
-	hash := passHash(user.Password)
 	c := i.db.GetConn()
-	rows, err := c.Query(
+
+	newID := uuid.New().String()
+	hash := passHash(user.Password)
+
+	_, err := c.Exec(
 		ctx,
-		"INSERT INTO User VALUES ($1,$2,$3,$4,$5,$6,$7,$8)",
-		uuid.New().String(),
-		user.
+		"INSERT INTO User VALUES ($1,$2,$3,$4,$5,$6,$7)",
+		newID,
+		hash,
+		user.FirstName,
+		user.SecondName,
+		user.Birthdate,
+		user.Biography,
+		user.City,
 	)
 	if err != nil {
 		return "", err
-	}
-	defer rows.Close()
-
-	var count uint64
-
-	for rows.Next() {
-		if err := rows.Scan(&count); err != nil {
-			return "", err
-		}
 	}
 
 	return hash, nil
@@ -44,13 +43,13 @@ func (i *Instance) UserRegisterPost(c *gin.Context) {
 
 	logrus.Debugf("Request: %v", request)
 
-	hash, err := i.login(context.Background(), request.Id, request.Password)
+	id, err := i.register(context.Background(), request)
 	if err != nil {
-		c.JSON(404, gin.H{"status": "Пользователь не найден"})
-		logrus.Debugf("Пользователь не найден: %v", c.Request)
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
+		logrus.Errorf("Internal Server Error: %v", err)
 	}
 
-	response := LoginPost200Response{Token: hash}
+	response := UserRegisterPost200Response{UserId: id}
 
 	c.JSON(http.StatusOK, response)
 }
