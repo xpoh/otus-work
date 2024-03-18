@@ -80,9 +80,3 @@ func (i *Instance) PostUpdatePut(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
-
-// UserSearchGet Get /user/search
-func (i *Instance) UserSearchGet(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
-}
