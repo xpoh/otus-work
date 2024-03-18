@@ -12,7 +12,6 @@ Table "Post" {
   Note: 'Пост пользователя'
 }
 
-
 Table "User" {
   "id" uuid [primary key, default: `public.uuid_generate_v4()`]
   "first_name" TEXT [default: NULL, note: 'Имя']

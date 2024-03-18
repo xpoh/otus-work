@@ -51,6 +51,10 @@ build:
 		-X gitlab.rdp.ru/tt/cmetrics/pkg/buildinfo.buildUnixTimestamp=$(BUILD_TIME) \
 		-X gitlab.rdp.ru/tt/cmetrics/pkg/buildinfo.builder=$(BUILDER)" -o bin/$(TARGET) ./cmd/$(TARGET)
 
+################################################################################
+### Uploads & pushes
+###
+
 image:
 	docker build \
 		-f deploy/Dockerfile \
@@ -62,37 +66,6 @@ image:
 
 push:
 	docker push $(IMAGE_NAME)
-
-################################################################################
-### Generators
-###
-$(MOCKGEN_INSTALL_LOCK):
-	go install github.com/golang/mock/mockgen@v1.6.0
-	touch $(MOCKGEN_INSTALL_LOCK)
-
-$(MOCKGEN_LOCK):
-	# mockgen ...
-	touch $(MOCKGEN_LOCK)
-
-mocks: $(MOCKGEN_INSTALL_LOCK) $(MOCKGEN_LOCK)
-
-################################################################################
-### Uploads & pushes
-###
-
-imagetar: image
-	buildah push $(IMAGE_NAME) docker-archive:./$(TARGET).tar:$(IMAGE_NAME)
-
-loadpush:
-	echo -n "$$CI_DOCKER_PASSWORD" | buildah login -u "$$CI_DOCKER_LOGIN" --password-stdin harbor.tteam.dev
-	buildah rmi $(IMAGE_NAME) || echo "image not found"
-	buildah pull docker-archive:./$(TARGET).tar:$(IMAGE_NAME)
-	buildah push $(IMAGE_NAME) docker://$(IMAGE_NAME)
-	if test -n "$$COSIGN_PASSWORD"; then \
-		echo $$(echo -n "$$COSIGN_PASSWORD" | \
-		podman run --rm -i harbor.tteam.dev/tt/cosign:2.0.1-1 \
-		cosign sign -y --key /root/cosign.key $(IMAGE_NAME)); \
-	fi
 
 ################################################################################
 ### Tests
@@ -135,14 +108,6 @@ modup: tidy
 	go get -u ./...
 	go mod tidy
 
-buf-download:
-	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.19.1
-	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.32.0
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
-	go install github.com/bufbuild/buf/cmd/buf@v1.4.0 \
-		github.com/bufbuild/buf/cmd/protoc-gen-buf-breaking@v1.4.0 \
-		github.com/bufbuild/buf/cmd/protoc-gen-buf-lint@v1.4.0
-
 ################################################################################
 ### Other Helpers
 ###
@@ -154,18 +119,3 @@ strip: build
 	strip bin/$(TARGET)
 
 .PHONY: build
-
-serve:
-	go run -ldflags "-X gitlab.rdp.ru/tt/cmetrics/pkg/buildinfo.version=$(VERSION) \
-		-X gitlab.rdp.ru/tt/cmetrics/pkg/buildinfo.commit=$(COMMIT) \
-		-X gitlab.rdp.ru/tt/cmetrics/pkg/buildinfo.branch=$(BRANCH) \
-		-X gitlab.rdp.ru/tt/cmetrics/pkg/buildinfo.buildUnixTimestamp=$(BUILD_TIME) \
-		-X gitlab.rdp.ru/tt/cmetrics/pkg/buildinfo.builder=$(BUILDER)" ./cmd/device-manager
-
-# TODO: добавить в CI проверку на генерацию
-# # Инженеринг моделей по существующей структуре БД
-models:
-	go install github.com/volatiletech/sqlboiler/v4@v4.16.1
-	go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql@v4.16.1
-	sqlboiler -c sqlboiler.yaml -p models -o internal/database/models --no-auto-timestamps --no-tests --wipe psql
-.PHONY: models
