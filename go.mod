@@ -3,6 +3,7 @@ module github.com/xpoh/otus-work
 go 1.22.0
 
 require (
+	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/davecgh/go-spew v1.1.1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-migrate/migrate/v4 v4.17.0
