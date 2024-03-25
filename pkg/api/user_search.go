@@ -15,7 +15,8 @@ func (i *Instance) search(ctx context.Context, first, last string) ([]User, erro
 	rows, err := c.Query(
 		ctx,
 		"SELECT id, first_name, second_name, birthdate, biography, city "+
-			"FROM postgres.public.\"User\" WHERE first_name LIKE $1 AND second_name LIKE $2",
+			"FROM postgres.public.\"User\" WHERE first_name LIKE $1 AND second_name LIKE $2 "+
+			"ORDER BY id",
 		fmt.Sprintf("%s%%", first),
 		fmt.Sprintf("%s%%", last),
 	)
