@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:14.11-alpine3.19
+    image: postgres:16.2-alpine3.19
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -19,7 +19,7 @@ services:
       retries: 5
 
   service:
-    image: docker.io/akaddr/net:v0.2.0
+    image: docker.io/akaddr/net:v0.2.3
     environment:
       - DB_HOST=db
     ports:
