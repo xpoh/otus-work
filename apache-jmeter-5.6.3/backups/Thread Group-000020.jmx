@@ -33,7 +33,7 @@
             <collectionProp name="Arguments.arguments">
               <elementProp name="first_name" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">Rudy</stringProp>
+                <stringProp name="Argument.value">A</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
                 <stringProp name="Argument.name">first_name</stringProp>
@@ -41,7 +41,7 @@
               </elementProp>
               <elementProp name="last_name" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">Rosenbaum</stringProp>
+                <stringProp name="Argument.value">W</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
                 <stringProp name="Argument.name">last_name</stringProp>
