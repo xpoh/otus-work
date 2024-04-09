@@ -45,11 +45,7 @@ api-gen:
 ###
 
 build:
-	go build -ldflags "-X gitlab.rdp.ru/tt/cmetrics/pkg/buildinfo.version=$(VERSION) \
-		-X gitlab.rdp.ru/tt/cmetrics/pkg/buildinfo.commit=$(COMMIT) \
-		-X gitlab.rdp.ru/tt/cmetrics/pkg/buildinfo.branch=$(BRANCH) \
-		-X gitlab.rdp.ru/tt/cmetrics/pkg/buildinfo.buildUnixTimestamp=$(BUILD_TIME) \
-		-X gitlab.rdp.ru/tt/cmetrics/pkg/buildinfo.builder=$(BUILDER)" -o bin/$(TARGET) ./cmd/$(TARGET)
+	go build -o bin/$(TARGET) ./cmd/$(TARGET)
 
 ################################################################################
 ### Uploads & pushes
