@@ -22,6 +22,8 @@ import (
 
 func main() {
 	cfg := config.New()
+	cfg.PrintDebug()
+
 	initLogger(cfg)
 
 	ctx := context.Background()

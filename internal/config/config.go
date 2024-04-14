@@ -28,6 +28,7 @@ type EnvSetting struct {
 	DBName     string `env:"DB_NAME" env-default:"postgres" env-description:"Database name"`
 	DBUser     string `env:"DB_USER" env-default:"postgres" env-description:"Username to connect to DB"`
 	DBPassword string `env:"DB_PASSWORD" env-default:"postgres" env-description:"Password to connect to DB"`
+	MockData   bool   `env:"DB_MOCK_DATA" env-default:"false"`
 
 	LogLevel string `env:"LOG_LEVEL" env-default:"info" env-description:"log level: trace, debug, info, warn, error, fatal, panic"` //nolint:lll
 }
@@ -90,6 +91,8 @@ func (c *Config) PrintDebug() {
 
 		log.Debugf("%s: %v", key, spew.Sprintf("%#v", envReflect.Field(i).Interface()))
 	}
+
+	log.Infof("config loaded: %+v", *c.env)
 }
 
 func (c *Config) GetHost() string {
@@ -116,6 +119,10 @@ func (c *Config) GetDBUser() string {
 
 func (c *Config) GetDBPassword() string {
 	return c.env.DBPassword
+}
+
+func (c *Config) GetMockData() bool {
+	return c.env.MockData
 }
 
 func (c *Config) GetLogLevel() log.Level {

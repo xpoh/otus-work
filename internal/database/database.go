@@ -19,41 +19,42 @@ func NewInstance(cfg Config) *Instance {
 	return &Instance{cfg: cfg}
 }
 
-const mockDataCount = uint64(1e6)
+const (
+	mockDataCount = uint64(1000)
+	mockDataSize  = uint64(1000)
+)
 
 func createMockData(ctx context.Context, conn *pgx.Conn) error {
 	log.Infof("Creating mock...")
 	defer log.Infof("Done")
 
-	tx, err := conn.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer func(tx pgx.Tx, ctx context.Context) {
-		err := tx.Commit(ctx)
+	for range mockDataSize {
+		tx, err := conn.Begin(ctx)
 		if err != nil {
-			log.Error(ctx, err)
-		}
-	}(tx, ctx)
-
-	for range mockDataCount {
-		if _, err := conn.Exec(
-			ctx,
-			"INSERT INTO postgres.public.\"User\" VALUES ($1,$2,$3,$4,$5,$6,$7)",
-			fakeit.UUID(),
-			fakeit.HackerVerb(),
-			fakeit.FirstName(),
-			fakeit.LastName(),
-			fakeit.Date().String(),
-			fakeit.BeerAlcohol(),
-			fakeit.City(),
-		); err != nil {
 			return err
 		}
-	}
 
-	if err := tx.Commit(ctx); err != nil {
-		return err
+		for range mockDataCount {
+			if _, err := conn.Exec(
+				ctx,
+				"INSERT INTO postgres.public.\"User\" VALUES ($1,$2,$3,$4,$5,$6,$7)",
+				fakeit.UUID(),
+				fakeit.HackerVerb(),
+				fakeit.FirstName(),
+				fakeit.LastName(),
+				fakeit.Date().String(),
+				fakeit.BeerAlcohol(),
+				fakeit.City(),
+			); err != nil {
+				return err
+			}
+		}
+
+		if err := tx.Commit(ctx); err != nil {
+			return err
+		}
+
+		fmt.Printf(".")
 	}
 
 	return nil
@@ -64,8 +65,10 @@ func (i *Instance) Run(ctx context.Context) error {
 		return fmt.Errorf("s.storage.Connect(): %w", err)
 	}
 
-	if err := createMockData(ctx, i.conn); err != nil {
-		return fmt.Errorf("createMockData(): %w", err)
+	if i.cfg.GetMockData() {
+		if err := createMockData(ctx, i.conn); err != nil {
+			return fmt.Errorf("createMockData(): %w", err)
+		}
 	}
 
 	return nil

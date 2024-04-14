@@ -6,4 +6,5 @@ type Config interface {
 	GetDBName() string
 	GetDBUser() string
 	GetDBPassword() string
+	GetMockData() bool
 }
