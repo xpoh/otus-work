@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	jwt "github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -21,13 +20,17 @@ func (i *Instance) deleteFriend(ctx context.Context, id string, friendID string)
 
 // FriendDeleteUserIdPut Put /friend/delete/:user_id
 func (i *Instance) FriendDeleteUserIdPut(c *gin.Context) {
-	claims := jwt.ExtractClaims(c)
-	id := c.Param("id")
+	friendID := c.Param("user_id")
 
-	logrus.Infof("User %v remove friend %v", id, claims["user_id"])
+	userID, err := getUserIDFromHeader(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": err})
+	}
 
-	if err := i.deleteFriend(context.Background(), id, claims["user_id"].(string)); err != nil {
-		logrus.Errorf("error removing friend %v: %v", id, err)
+	logrus.Infof("User %v remove friend %v", userID, friendID)
+
+	if err := i.deleteFriend(context.Background(), userID, friendID); err != nil {
+		logrus.Errorf("error removing friend %v: %v", friendID, err)
 
 		c.JSON(http.StatusNotFound, gin.H{"status": "not find"})
 	}
@@ -47,13 +50,17 @@ func (i *Instance) addFriend(ctx context.Context, id string, friendID string) er
 
 // FriendSetUserIdPut Put /friend/set/:user_id
 func (i *Instance) FriendSetUserIdPut(c *gin.Context) {
-	claims := jwt.ExtractClaims(c)
-	id := c.Param("id")
+	friendID := c.Param("user_id")
 
-	logrus.Infof("User %v remove friend %v", id, claims["user_id"])
+	userID, err := getUserIDFromHeader(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": err})
+	}
 
-	if err := i.addFriend(context.Background(), id, claims["user_id"].(string)); err != nil {
-		logrus.Errorf("error removing friend %v: %v", id, err)
+	logrus.Infof("User %v remove friend %v", userID, friendID)
+
+	if err := i.addFriend(context.Background(), friendID, userID); err != nil {
+		logrus.Errorf("error removing friend %v: %v", friendID, err)
 
 		c.JSON(http.StatusNotFound, gin.H{"status": "not find"})
 	}

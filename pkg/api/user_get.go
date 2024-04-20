@@ -2,13 +2,14 @@ package api
 
 import (
 	"context"
+	"github.com/xpoh/otus-work/pkg/api/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
-func (i *Instance) get(ctx context.Context, id string) (*User, error) {
+func (i *Instance) get(ctx context.Context, id string) (*models.User, error) {
 	c := i.db.GetConn()
 
 	row := c.QueryRow(
@@ -16,7 +17,7 @@ func (i *Instance) get(ctx context.Context, id string) (*User, error) {
 		"SELECT id, first_name, second_name, birthdate, biography, city "+
 			"FROM postgres.public.\"User\" WHERE id=$1", id)
 
-	var user User
+	var user models.User
 
 	if err := row.Scan(
 		&user.Id,

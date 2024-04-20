@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"github.com/xpoh/otus-work/pkg/api/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (i *Instance) register(ctx context.Context, user UserRegisterPostRequest) (string, error) {
+func (i *Instance) register(ctx context.Context, user models.UserRegisterPostRequest) (string, error) {
 	c := i.db.GetConn()
 
 	newID := uuid.New().String()
@@ -35,7 +36,7 @@ func (i *Instance) register(ctx context.Context, user UserRegisterPostRequest) (
 
 // UserRegisterPost Post /user/register
 func (i *Instance) UserRegisterPost(c *gin.Context) {
-	request := UserRegisterPostRequest{}
+	request := models.UserRegisterPostRequest{}
 
 	if err := c.Bind(&request); err != nil {
 		c.JSON(400, gin.H{"status": "Невалидные данные"})
@@ -54,7 +55,7 @@ func (i *Instance) UserRegisterPost(c *gin.Context) {
 		return
 	}
 
-	response := UserRegisterPost200Response{UserId: id}
+	response := models.UserRegisterPost200Response{UserId: id}
 
 	c.JSON(http.StatusOK, response)
 }

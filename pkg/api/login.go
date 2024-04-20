@@ -4,13 +4,15 @@ import (
 	"context"
 	"crypto/sha512"
 	"encoding/hex"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/sirupsen/logrus"
-	"net/http"
+	"github.com/xpoh/otus-work/pkg/api/models"
 )
 
-const jwtSignKey = "OTUS"
+const jwtSignKey = "JWT_PAYLOAD"
 
 func passHash(pass string) string {
 	hash := sha512.New()
@@ -42,7 +44,7 @@ func (i *Instance) login(ctx context.Context, id string, password string) (strin
 
 // LoginPost Post /login
 func (i *Instance) LoginPost(c *gin.Context) {
-	request := LoginPostRequest{}
+	request := models.LoginPostRequest{}
 
 	if err := c.Bind(&request); err != nil {
 		c.JSON(400, gin.H{"status": "Невалидные данные"})
@@ -66,9 +68,14 @@ func (i *Instance) LoginPost(c *gin.Context) {
 		"hash":    hash,
 	})
 
-	tokenString, err := token.SignedString(jwtSignKey)
+	tokenString, err := token.SignedString([]byte(jwtSignKey))
+	if err != nil {
+		logrus.Errorf("Error signing token: %v", err)
+	}
 
-	response := LoginPost200Response{Token: tokenString}
+	logrus.Infof("Signed token: %v", tokenString)
+
+	response := models.LoginPost200Response{Token: tokenString}
 
 	c.JSON(http.StatusOK, response)
 }
