@@ -3,10 +3,10 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 func (i *Instance) search(ctx context.Context, first, last string) ([]User, error) {

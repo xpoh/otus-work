@@ -4,11 +4,13 @@ import (
 	"context"
 	"crypto/sha512"
 	"encoding/hex"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/sirupsen/logrus"
+	"net/http"
 )
+
+const jwtSignKey = "OTUS"
 
 func passHash(pass string) string {
 	hash := sha512.New()
@@ -59,7 +61,14 @@ func (i *Instance) LoginPost(c *gin.Context) {
 		return
 	}
 
-	response := LoginPost200Response{Token: hash}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": request.Id,
+		"hash":    hash,
+	})
+
+	tokenString, err := token.SignedString(jwtSignKey)
+
+	response := LoginPost200Response{Token: tokenString}
 
 	c.JSON(http.StatusOK, response)
 }
