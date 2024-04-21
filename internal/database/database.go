@@ -3,6 +3,8 @@ package database
 import (
 	"context"
 	"fmt"
+	"math/rand"
+
 	fakeit "github.com/brianvoe/gofakeit"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres" // for postgres supporting
 	_ "github.com/golang-migrate/migrate/v4/source/file"       // for file format supporting
@@ -20,11 +22,14 @@ func NewInstance(cfg Config) *Instance {
 }
 
 const (
-	mockDataCount = uint64(1000)
-	mockDataSize  = uint64(1000)
+	mockDataCount          = uint64(1000)
+	mockDataSize           = uint64(1000)
+	mockDataPostsPerUser   = 20
+	mockDataFriendsPerUser = 20
 )
 
 func createMockData(ctx context.Context, conn *pgx.Conn) error {
+	users := make([]string, 0, mockDataSize*mockDataCount)
 	log.Infof("Creating mock...")
 	defer log.Infof("Done")
 
@@ -35,10 +40,13 @@ func createMockData(ctx context.Context, conn *pgx.Conn) error {
 		}
 
 		for range mockDataCount {
+			userID := fakeit.UUID()
+			users = append(users, userID)
+
 			if _, err := conn.Exec(
 				ctx,
 				"INSERT INTO postgres.public.\"User\" VALUES ($1,$2,$3,$4,$5,$6,$7)",
-				fakeit.UUID(),
+				userID,
 				fakeit.HackerVerb(),
 				fakeit.FirstName(),
 				fakeit.LastName(),
@@ -48,6 +56,31 @@ func createMockData(ctx context.Context, conn *pgx.Conn) error {
 			); err != nil {
 				return err
 			}
+
+			for range rand.Intn(mockDataPostsPerUser) {
+				if _, err := conn.Exec(
+					ctx,
+					"INSERT INTO postgres.public.\"Post\" VALUES ($1,$2,$3)",
+					fakeit.UUID(),
+					fakeit.Sentence(rand.Intn(50)),
+					userID,
+				); err != nil {
+					return err
+				}
+			}
+
+			for range rand.Intn(mockDataFriendsPerUser) {
+				if _, err := conn.Exec(
+					ctx,
+					"INSERT INTO postgres.public.\"Friend\" VALUES ($1,$2,$3)",
+					fakeit.UUID(),
+					userID,
+					users[rand.Intn(len(users))],
+				); err != nil {
+					return err
+				}
+			}
+
 		}
 
 		if err := tx.Commit(ctx); err != nil {
@@ -66,9 +99,11 @@ func (i *Instance) Run(ctx context.Context) error {
 	}
 
 	if i.cfg.GetMockData() {
-		if err := createMockData(ctx, i.conn); err != nil {
-			return fmt.Errorf("createMockData(): %w", err)
-		}
+		go func() {
+			if err := createMockData(ctx, i.conn); err != nil {
+				log.Errorf("createMockData(): %v", err)
+			}
+		}()
 	}
 
 	return nil

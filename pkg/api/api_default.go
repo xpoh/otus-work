@@ -10,19 +10,27 @@
 package api
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"github.com/xpoh/otus-work/internal/config"
 	"github.com/xpoh/otus-work/internal/database"
 )
 
 type Instance struct {
 	db  *database.Instance
+	rds *redis.Client
 	cfg *config.Config
 }
 
 func NewInstance(db *database.Instance, cfg *config.Config) *Instance {
+	r := redis.NewClient(&redis.Options{
+		Addr: fmt.Sprintf("%s:%d", cfg.GetRedisHost(), cfg.GetRedisPort()),
+	})
+
 	return &Instance{
 		db:  db,
+		rds: r,
 		cfg: cfg,
 	}
 }
@@ -35,48 +43,6 @@ func (i *Instance) DialogUserIdListGet(c *gin.Context) {
 
 // DialogUserIdSendPost Post /dialog/:user_id/send
 func (i *Instance) DialogUserIdSendPost(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
-}
-
-// FriendDeleteUserIdPut Put /friend/delete/:user_id
-func (i *Instance) FriendDeleteUserIdPut(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
-}
-
-// FriendSetUserIdPut Put /friend/set/:user_id
-func (i *Instance) FriendSetUserIdPut(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
-}
-
-// PostCreatePost Post /post/create
-func (i *Instance) PostCreatePost(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
-}
-
-// PostDeleteIdPut Put /post/delete/:id
-func (i *Instance) PostDeleteIdPut(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
-}
-
-// PostFeedGet Get /post/feed
-func (i *Instance) PostFeedGet(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
-}
-
-// PostGetIdGet Get /post/get/:id
-func (i *Instance) PostGetIdGet(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
-}
-
-// PostUpdatePut Put /post/update
-func (i *Instance) PostUpdatePut(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }

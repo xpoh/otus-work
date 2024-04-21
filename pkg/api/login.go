@@ -7,8 +7,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/sirupsen/logrus"
+	"github.com/xpoh/otus-work/pkg/api/models"
 )
+
+const jwtSignKey = "JWT_PAYLOAD"
 
 func passHash(pass string) string {
 	hash := sha512.New()
@@ -40,7 +44,7 @@ func (i *Instance) login(ctx context.Context, id string, password string) (strin
 
 // LoginPost Post /login
 func (i *Instance) LoginPost(c *gin.Context) {
-	request := LoginPostRequest{}
+	request := models.LoginPostRequest{}
 
 	if err := c.Bind(&request); err != nil {
 		c.JSON(400, gin.H{"status": "Невалидные данные"})
@@ -59,7 +63,19 @@ func (i *Instance) LoginPost(c *gin.Context) {
 		return
 	}
 
-	response := LoginPost200Response{Token: hash}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": request.Id,
+		"hash":    hash,
+	})
+
+	tokenString, err := token.SignedString([]byte(jwtSignKey))
+	if err != nil {
+		logrus.Errorf("Error signing token: %v", err)
+	}
+
+	logrus.Infof("Signed token: %v", tokenString)
+
+	response := models.LoginPost200Response{Token: tokenString}
 
 	c.JSON(http.StatusOK, response)
 }
