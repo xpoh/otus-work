@@ -10,19 +10,27 @@
 package api
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"github.com/xpoh/otus-work/internal/config"
 	"github.com/xpoh/otus-work/internal/database"
 )
 
 type Instance struct {
 	db  *database.Instance
+	rds *redis.Client
 	cfg *config.Config
 }
 
 func NewInstance(db *database.Instance, cfg *config.Config) *Instance {
+	r := redis.NewClient(&redis.Options{
+		Addr: fmt.Sprintf("%s:%d", cfg.GetRedisHost(), cfg.GetRedisPort()),
+	})
+
 	return &Instance{
 		db:  db,
+		rds: r,
 		cfg: cfg,
 	}
 }

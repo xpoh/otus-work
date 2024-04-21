@@ -30,6 +30,9 @@ type EnvSetting struct {
 	DBPassword string `env:"DB_PASSWORD" env-default:"postgres" env-description:"Password to connect to DB"`
 	MockData   bool   `env:"DB_MOCK_DATA" env-default:"false"`
 
+	RedisHost string `env:"REDIS_HOST" env-default:"redis"`
+	RedisPort uint16 `env:"REDIS_PORT" env-default:"6379"`
+
 	LogLevel string `env:"LOG_LEVEL" env-default:"info" env-description:"log level: trace, debug, info, warn, error, fatal, panic"` //nolint:lll
 }
 
@@ -123,6 +126,14 @@ func (c *Config) GetDBPassword() string {
 
 func (c *Config) GetMockData() bool {
 	return c.env.MockData
+}
+
+func (c *Config) GetRedisHost() string {
+	return c.env.RedisHost
+}
+
+func (c *Config) GetRedisPort() uint16 {
+	return c.env.RedisPort
 }
 
 func (c *Config) GetLogLevel() log.Level {

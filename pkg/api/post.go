@@ -2,8 +2,12 @@ package api
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/redis/go-redis/v9"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -46,6 +50,22 @@ func (i *Instance) feed(ctx context.Context, id string, limit, offset string) ([
 	return posts, nil
 }
 
+func (i *Instance) cacheFeed(ctx context.Context, id, limit, offset string) (string, error) {
+	r := i.rds
+
+	key := id + ":" + offset + ":" + limit
+
+	return r.Get(ctx, key).Result()
+}
+
+func (i *Instance) cacheSet(ctx context.Context, id, limit, offset string, value string) error {
+	r := i.rds
+
+	key := id + ":" + offset + ":" + limit
+
+	return r.Set(ctx, key, value, 10*time.Minute).Err()
+}
+
 // PostFeedGet Get /post/feed
 func (i *Instance) PostFeedGet(c *gin.Context) {
 	offset := c.Query("offset")
@@ -56,11 +76,31 @@ func (i *Instance) PostFeedGet(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"status": err})
 	}
 
+	result, err := i.cacheFeed(c, userID, limit, offset)
+	if !errors.Is(err, redis.Nil) && err != nil {
+		logrus.Errorf("error getting work with cache: %v", err)
+
+		c.JSON(http.StatusInternalServerError, gin.H{"status:": err.Error()})
+	}
+
+	if err == nil {
+		c.JSON(http.StatusOK, result)
+	}
+
 	posts, err := i.feed(context.Background(), userID, limit, offset)
 	if err != nil {
 		logrus.Errorf("error getting posts: %v", err)
 
 		c.JSON(http.StatusNotFound, gin.H{"status": "not find"})
+	}
+
+	p, err := json.Marshal(posts)
+	if err != nil {
+		logrus.Errorf("error marshalling posts: %v", err)
+	}
+
+	if err := i.cacheSet(c, userID, limit, offset, string(p)); err != nil {
+		logrus.Errorf("error cache set: %v", err)
 	}
 
 	c.JSON(http.StatusOK, posts)
