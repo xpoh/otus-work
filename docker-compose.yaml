@@ -60,16 +60,16 @@ services:
     ports:
       - '6379:6379'
 
-#  service:
-#    image: docker.io/akaddr/net:v0.2.5
-#    environment:
-#      - DB_HOST=pg-0
-#      - DB_PORT=5432
-#      - DB_MOCK_DATA=false
-#      - REDIS_HOST=redis
-#      - REDIS_PORT=6379
-#    ports:
-#      - "8000:8000"
-#    depends_on:
-#      pgpool:
-#        condition: service_healthy
+  service:
+    image: docker.io/akaddr/net:v0.3
+    environment:
+      - DB_HOST=pg-0
+      - DB_PORT=5432
+      - DB_MOCK_DATA=false
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    ports:
+      - "8000:8000"
+    depends_on:
+      pgpool:
+        condition: service_healthy
