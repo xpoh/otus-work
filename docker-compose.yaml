@@ -15,7 +15,6 @@ services:
       - REPMGR_PARTNER_NODES=pg-0,pg-1,pg-2
       - REPMGR_NODE_NAME=pg-0
       - REPMGR_NODE_NETWORK_NAME=pg-0
-      - POSTGRESQL_NUM_SYNCHRONOUS_REPLICAS=1
 
   pg-1:
     image: bitnami/postgresql-repmgr:14
@@ -33,7 +32,6 @@ services:
       - REPMGR_PARTNER_NODES=pg-0,pg-1,pg-2
       - REPMGR_NODE_NAME=pg-1
       - REPMGR_NODE_NETWORK_NAME=pg-1
-      - POSTGRESQL_NUM_SYNCHRONOUS_REPLICAS=1
 
   pgpool:
     image: bitnami/pgpool:4
@@ -57,24 +55,21 @@ services:
   redis:
     image: docker.io/bitnami/redis:7.2
     environment:
-      # ALLOW_EMPTY_PASSWORD is recommended only for development.
       - ALLOW_EMPTY_PASSWORD=yes
       - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
     ports:
       - '6379:6379'
-#    volumes:
-#      - 'redis_data:/bitnami/redis/data'
 
-  service:
-    image: docker.io/akaddr/net:v0.2.5
-    environment:
-      - DB_HOST=pg-0
-      - DB_PORT=5432
-      - DB_MOCK_DATA=false
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-    ports:
-      - "8000:8000"
-    depends_on:
-      pgpool:
-        condition: service_healthy
+#  service:
+#    image: docker.io/akaddr/net:v0.2.5
+#    environment:
+#      - DB_HOST=pg-0
+#      - DB_PORT=5432
+#      - DB_MOCK_DATA=false
+#      - REDIS_HOST=redis
+#      - REDIS_PORT=6379
+#    ports:
+#      - "8000:8000"
+#    depends_on:
+#      pgpool:
+#        condition: service_healthy

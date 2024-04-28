@@ -2,10 +2,11 @@ package api
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
 func (i *Instance) deleteFriend(ctx context.Context, id string, friendID string) error {

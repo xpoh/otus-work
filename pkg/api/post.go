@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/redis/go-redis/v9"
+	"github.com/google/uuid"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 	"github.com/xpoh/otus-work/pkg/api/models"
 )
@@ -24,7 +25,6 @@ func (i *Instance) feed(ctx context.Context, id string, limit, offset string) ([
 				where author_user_id = fr.friend_id
 				LIMIT $2
 				OFFSET $3`, id, limit, offset)
-
 	if err != nil {
 		return nil, fmt.Errorf("error get feed: %w", err)
 	}
@@ -48,6 +48,33 @@ func (i *Instance) feed(ctx context.Context, id string, limit, offset string) ([
 	}
 
 	return posts, nil
+}
+
+func (i *Instance) friendsList(ctx context.Context, id string) ([]string, error) {
+	c := i.db.GetConn()
+
+	rows, err := c.Query(
+		ctx,
+		`select friend_id from "Friend" where user_id=$1`, id)
+	if err != nil {
+		return nil, fmt.Errorf("error get feed: %w", err)
+	}
+
+	defer rows.Close()
+
+	fiendsID := make([]string, 0)
+
+	for rows.Next() {
+		var id string
+
+		if err = rows.Scan(&id); err != nil {
+			return nil, fmt.Errorf("error querying post: %w", err)
+		}
+
+		fiendsID = append(fiendsID, id)
+	}
+
+	return fiendsID, nil
 }
 
 func (i *Instance) cacheFeed(ctx context.Context, id, limit, offset string) (string, error) {
@@ -106,9 +133,72 @@ func (i *Instance) PostFeedGet(c *gin.Context) {
 	c.JSON(http.StatusOK, posts)
 }
 
+func (i *Instance) postCreate(ctx context.Context, userID, text string) error {
+	c := i.db.GetConn()
+
+	newID := uuid.New().String()
+
+	if _, err := c.Exec(
+		ctx,
+		"INSERT INTO postgres.public.\"Post\" VALUES ($1,$2,$3)",
+		newID,
+		text,
+		userID,
+	); err != nil {
+		return err
+	}
+
+	if err := i.notifyFriends(ctx, newID, userID, text); err != nil {
+		logrus.Error("error notification %v [%s]: %v", userID, text, err)
+	}
+
+	return nil
+}
+
+func (i *Instance) notifyFriends(ctx context.Context, postID, userID, text string) error {
+	friendsID, err := i.friendsList(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	for _, id := range friendsID {
+		if c, ok := i.usersOnline[id]; ok {
+			message := fmt.Sprintf("post from user %s: %s", userID, text)
+			c <- models.Post{
+				Id:           postID,
+				Text:         text,
+				AuthorUserId: userID,
+			}
+
+			logrus.Infof(message)
+		}
+	}
+
+	return nil
+}
+
 // PostCreatePost Post /post/create
 func (i *Instance) PostCreatePost(c *gin.Context) {
-	// Your handler implementation
+	userID, err := getUserIDFromHeader(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": err})
+	}
+
+	request := models.PostCreatePostRequest{}
+
+	if err := c.Bind(&request); err != nil {
+		c.JSON(400, gin.H{"status": "Невалидные данные"})
+		logrus.Debugf("Невалидные данные: %v", c.Request)
+
+		return
+	}
+
+	if err := i.postCreate(context.Background(), userID, request.Text); err != nil {
+		logrus.Errorf("error create post: %v", err)
+
+		c.JSON(http.StatusNotFound, gin.H{"status": "error create post"})
+	}
+
 	c.JSON(200, gin.H{"status": "OK"})
 }
 

@@ -2,11 +2,11 @@ package api
 
 import (
 	"context"
-	"github.com/xpoh/otus-work/pkg/api/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"github.com/xpoh/otus-work/pkg/api/models"
 )
 
 func (i *Instance) get(ctx context.Context, id string) (*models.User, error) {

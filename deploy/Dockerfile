@@ -23,4 +23,6 @@ COPY scripts scripts
 
 COPY --from=builder /opt/app/bin/net /srv/net
 
+COPY ./index.html /srv/index.html
+
 ENTRYPOINT ["/srv/net"]

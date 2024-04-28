@@ -2,12 +2,12 @@ package api
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/sirupsen/logrus"
 )
 
 func extractClaims(tokenStr string) (jwt.MapClaims, bool) {
@@ -18,7 +18,6 @@ func extractClaims(tokenStr string) (jwt.MapClaims, bool) {
 		// check token signing method etc
 		return hmacSecret, nil
 	})
-
 	if err != nil {
 		return nil, false
 	}

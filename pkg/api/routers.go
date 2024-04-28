@@ -146,5 +146,17 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			"/user/search",
 			handleFunctions.DefaultAPI.UserSearchGet,
 		},
+		{
+			"Websocket",
+			http.MethodGet,
+			"/post/feed/posted/:id",
+			handleFunctions.DefaultAPI.WsHandler,
+		},
+		{
+			"Index",
+			http.MethodGet,
+			"/",
+			handleFunctions.DefaultAPI.Index,
+		},
 	}
 }
