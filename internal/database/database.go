@@ -22,16 +22,17 @@ func NewInstance(cfg Config) *Instance {
 }
 
 const (
-	mockDataCount          = uint64(1000)
-	mockDataSize           = uint64(1000)
+	mockDataCount          = uint64(100)
+	mockDataSize           = uint64(100)
 	mockDataPostsPerUser   = 20
 	mockDataFriendsPerUser = 20
 )
 
 func createMockData(ctx context.Context, conn *pgx.Conn) error {
 	users := make([]string, 0, mockDataSize*mockDataCount)
-	log.Infof("Creating mock...")
-	defer log.Infof("Done")
+
+	fmt.Printf("Creating mock...")
+	defer fmt.Printf("Done.\n")
 
 	for range mockDataSize {
 		tx, err := conn.Begin(ctx)

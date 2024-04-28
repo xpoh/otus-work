@@ -2,12 +2,12 @@ package api
 
 import (
 	"context"
-	"github.com/xpoh/otus-work/pkg/api/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"github.com/xpoh/otus-work/pkg/api/models"
 )
 
 func (i *Instance) register(ctx context.Context, user models.UserRegisterPostRequest) (string, error) {

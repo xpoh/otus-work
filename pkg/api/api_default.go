@@ -11,6 +11,8 @@ package api
 
 import (
 	"fmt"
+	"github.com/xpoh/otus-work/pkg/api/models"
+
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"github.com/xpoh/otus-work/internal/config"
@@ -21,6 +23,8 @@ type Instance struct {
 	db  *database.Instance
 	rds *redis.Client
 	cfg *config.Config
+
+	usersOnline map[string]chan models.Post
 }
 
 func NewInstance(db *database.Instance, cfg *config.Config) *Instance {
@@ -29,9 +33,10 @@ func NewInstance(db *database.Instance, cfg *config.Config) *Instance {
 	})
 
 	return &Instance{
-		db:  db,
-		rds: r,
-		cfg: cfg,
+		db:          db,
+		rds:         r,
+		cfg:         cfg,
+		usersOnline: make(map[string]chan models.Post),
 	}
 }
 

@@ -3,11 +3,11 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/xpoh/otus-work/pkg/api/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"github.com/xpoh/otus-work/pkg/api/models"
 )
 
 func (i *Instance) search(ctx context.Context, first, last string) ([]models.User, error) {

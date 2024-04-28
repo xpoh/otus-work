@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Post feed posted</title>
+</head>
+<body>
+<h1>Post feed posted</h1>
+
+<input type="text" id="user_id" placeholder="user ID">
+<button onclick="connect()">Connect</button>
+<hr>
+
+<hr>
+<div id="output"></div>
+
+<script>
+    let secure = window.location.protocol.includes('https') ? 's':'';
+    var socket
+    function connect() {
+        socket = new WebSocket("ws" + secure + "://" + window.location.host + "/post/feed/posted/"+ document.getElementById("user_id").value);
+
+        socket.onopen = function(event) {
+            console.log("WebSocket connected!");
+            document.getElementById("output").innerHTML += "Connected" + "<br>";
+        }
+
+        socket.onmessage = function(event) {
+            console.log("Received message:", event.data);
+            document.getElementById("output").innerHTML += event.data + "<br>";
+        }
+    }
+
+    // function sendMessage() {
+    //     var message = document.getElementById("message").value;
+    //     socket.send(message);
+    //     document.getElementById("message").value = "";
+    //     console.log("Sent message:", message);
+    // }
+</script>
+</body>
+</html>

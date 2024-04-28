@@ -46,6 +46,7 @@ func main() {
 	log.Printf("Server started")
 
 	router := sw.NewRouter(routes)
+	router.LoadHTMLGlob("index.html")
 
 	log.Panic(router.Run(fmt.Sprintf("%s:%s", cfg.GetHost(), cfg.GetPort())))
 }
