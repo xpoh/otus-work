@@ -50,10 +50,6 @@ func (i *Instance) WsHandler(c *gin.Context) {
 
 	defer kafkaClient.Close()
 
-	if _, ok := i.usersOnline[id]; !ok {
-		i.usersOnline[id] = struct{}{}
-	}
-
 	for {
 		message, err := kafkaClient.ReadMessage(c)
 		if err != nil {
