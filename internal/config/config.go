@@ -33,6 +33,8 @@ type EnvSetting struct {
 	RedisHost string `env:"REDIS_HOST" env-default:"redis"`
 	RedisPort uint16 `env:"REDIS_PORT" env-default:"6379"`
 
+	KafkaBrokers []string `env:"KAFKA_BROKERS" env-default:"kafka:9094" env-description:"comma-separated list of kafka brokers IP:PORT"` //nolint:lll
+
 	LogLevel string `env:"LOG_LEVEL" env-default:"info" env-description:"log level: trace, debug, info, warn, error, fatal, panic"` //nolint:lll
 }
 
@@ -134,6 +136,10 @@ func (c *Config) GetRedisHost() string {
 
 func (c *Config) GetRedisPort() uint16 {
 	return c.env.RedisPort
+}
+
+func (c *Config) GetKafkaBrokers() []string {
+	return c.env.KafkaBrokers
 }
 
 func (c *Config) GetLogLevel() log.Level {

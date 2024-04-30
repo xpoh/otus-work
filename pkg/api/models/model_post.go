@@ -9,6 +9,8 @@
 
 package models
 
+import "encoding/json"
+
 // Post - Пост пользователя
 type Post struct {
 	// Идентификатор поста
@@ -19,4 +21,10 @@ type Post struct {
 
 	// Идентификатор пользователя
 	AuthorUserId string `json:"author_user_id,omitempty"`
+}
+
+func (p Post) String() string {
+	b, _ := json.Marshal(p)
+
+	return string(b)
 }

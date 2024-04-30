@@ -11,7 +11,7 @@ package api
 
 import (
 	"fmt"
-	"github.com/xpoh/otus-work/pkg/api/models"
+	kafkaGo "github.com/segmentio/kafka-go"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -24,7 +24,7 @@ type Instance struct {
 	rds *redis.Client
 	cfg *config.Config
 
-	usersOnline map[string]chan models.Post
+	usersOnline map[string]*kafkaGo.Reader
 }
 
 func NewInstance(db *database.Instance, cfg *config.Config) *Instance {
@@ -36,7 +36,7 @@ func NewInstance(db *database.Instance, cfg *config.Config) *Instance {
 		db:          db,
 		rds:         r,
 		cfg:         cfg,
-		usersOnline: make(map[string]chan models.Post),
+		usersOnline: make(map[string]*kafkaGo.Reader),
 	}
 }
 
