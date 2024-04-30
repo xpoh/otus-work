@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/segmentio/kafka-go"
 	"net/http"
 	"time"
 
@@ -149,7 +150,7 @@ func (i *Instance) postCreate(ctx context.Context, userID, text string) error {
 	}
 
 	if err := i.notifyFriends(ctx, newID, userID, text); err != nil {
-		logrus.Error("error notification %v [%s]: %v", userID, text, err)
+		logrus.Errorf("error notification %v [%s]: %v", userID, text, err)
 	}
 
 	return nil
@@ -161,17 +162,26 @@ func (i *Instance) notifyFriends(ctx context.Context, postID, userID, text strin
 		return err
 	}
 
-	for _, id := range friendsID {
-		if c, ok := i.usersOnline[id]; ok {
-			message := fmt.Sprintf("post from user %s: %s", userID, text)
-			c <- models.Post{
-				Id:           postID,
-				Text:         text,
-				AuthorUserId: userID,
-			}
+	kafkaClient := kafka.Writer{
+		Addr:                   kafka.TCP(i.cfg.GetKafkaBrokers()...),
+		AllowAutoTopicCreation: true,
+	}
 
-			logrus.Infof(message)
+	for _, id := range friendsID {
+		message := models.Post{
+			Id:           postID,
+			Text:         text,
+			AuthorUserId: userID,
+		}.String()
+
+		if err := kafkaClient.WriteMessages(ctx, kafka.Message{
+			Topic: id,
+			Value: []byte(message),
+		}); err != nil {
+			return err
 		}
+
+		logrus.Infof(message)
 	}
 
 	return nil

@@ -1,8 +1,7 @@
 package api
 
 import (
-	"encoding/json"
-	"github.com/xpoh/otus-work/pkg/api/models"
+	"github.com/segmentio/kafka-go"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -41,28 +40,34 @@ func (i *Instance) WsHandler(c *gin.Context) {
 	}
 	defer conn.Close()
 
+	kafkaClient := kafka.NewReader(
+		kafka.ReaderConfig{
+			Brokers: i.cfg.GetKafkaBrokers(),
+			GroupID: "feed",
+			Topic:   id,
+		},
+	)
+
+	defer kafkaClient.Close()
+
 	if _, ok := i.usersOnline[id]; !ok {
-		i.usersOnline[id] = make(chan models.Post, 1024)
+		i.usersOnline[id] = kafkaClient
 	}
 
 	for {
-		select {
-		case <-c.Done():
-			close(i.usersOnline[id])
-
-			log.Infof("disconnect user %v", id)
+		message, err := i.usersOnline[id].ReadMessage(c)
+		if err != nil {
+			log.Errorf("Error reading message: %v", err)
 
 			return
-		case post := <-i.usersOnline[id]:
-			message, _ := json.Marshal(post)
-			err = conn.WriteMessage(1, message)
-			if err != nil {
-				log.Printf("%s, error while writing message\n", err.Error())
-				c.AbortWithError(http.StatusInternalServerError, err)
-				break
-			}
-
-			log.Infof("send message to user %v: %s", id, message)
 		}
+
+		if err = conn.WriteMessage(1, message.Value); err != nil {
+			log.Printf("%s, error while writing message\n", err.Error())
+
+			return
+		}
+
+		log.Infof("send message to user %v: %s", id, string(message.Value))
 	}
 }
