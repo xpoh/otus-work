@@ -51,11 +51,11 @@ func (i *Instance) WsHandler(c *gin.Context) {
 	defer kafkaClient.Close()
 
 	if _, ok := i.usersOnline[id]; !ok {
-		i.usersOnline[id] = kafkaClient
+		i.usersOnline[id] = struct{}{}
 	}
 
 	for {
-		message, err := i.usersOnline[id].ReadMessage(c)
+		message, err := kafkaClient.ReadMessage(c)
 		if err != nil {
 			log.Errorf("Error reading message: %v", err)
 

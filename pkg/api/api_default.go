@@ -11,8 +11,6 @@ package api
 
 import (
 	"fmt"
-	kafkaGo "github.com/segmentio/kafka-go"
-
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"github.com/xpoh/otus-work/internal/config"
@@ -24,7 +22,7 @@ type Instance struct {
 	rds *redis.Client
 	cfg *config.Config
 
-	usersOnline map[string]*kafkaGo.Reader
+	usersOnline map[string]any
 }
 
 func NewInstance(db *database.Instance, cfg *config.Config) *Instance {
@@ -36,7 +34,7 @@ func NewInstance(db *database.Instance, cfg *config.Config) *Instance {
 		db:          db,
 		rds:         r,
 		cfg:         cfg,
-		usersOnline: make(map[string]*kafkaGo.Reader),
+		usersOnline: make(map[string]any),
 	}
 }
 
