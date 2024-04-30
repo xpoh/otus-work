@@ -21,8 +21,6 @@ type Instance struct {
 	db  *database.Instance
 	rds *redis.Client
 	cfg *config.Config
-
-	usersOnline map[string]any
 }
 
 func NewInstance(db *database.Instance, cfg *config.Config) *Instance {
@@ -31,10 +29,9 @@ func NewInstance(db *database.Instance, cfg *config.Config) *Instance {
 	})
 
 	return &Instance{
-		db:          db,
-		rds:         r,
-		cfg:         cfg,
-		usersOnline: make(map[string]any),
+		db:  db,
+		rds: r,
+		cfg: cfg,
 	}
 }
 
