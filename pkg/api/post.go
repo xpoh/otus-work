@@ -168,6 +168,10 @@ func (i *Instance) notifyFriends(ctx context.Context, postID, userID, text strin
 	}
 
 	for _, id := range friendsID {
+		if _, ok := i.usersOnline[id]; !ok {
+			continue
+		}
+
 		message := models.Post{
 			Id:           postID,
 			Text:         text,
