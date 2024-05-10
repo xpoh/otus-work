@@ -12,6 +12,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/xpoh/otus-work/internal/tarantool"
 	"os"
 
 	log "github.com/sirupsen/logrus"
@@ -28,19 +29,29 @@ func main() {
 
 	ctx := context.Background()
 
-	db := database.NewInstance(cfg)
+	client, err := tarantool.NewClient(ctx, cfg)
+	if err != nil {
+		log.Panic(err)
+	}
+	defer func() {
+		if err := client.Close(); err != nil {
+			log.Error(err)
+		}
+	}()
+
+	db := database.NewInstance(cfg, client)
 	if err := db.Run(ctx); err != nil {
 		log.Panic(err)
 	}
-	defer func(db *database.Instance, ctx context.Context) {
+	defer func() {
 		err := db.Stop(ctx)
 		if err != nil {
 			log.Error(err)
 		}
-	}(db, ctx)
+	}()
 
 	routes := sw.ApiHandleFunctions{
-		DefaultAPI: sw.NewInstance(db, cfg),
+		DefaultAPI: sw.NewInstance(db, client, cfg),
 	}
 
 	log.Printf("Server started")

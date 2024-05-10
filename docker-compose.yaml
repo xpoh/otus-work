@@ -80,7 +80,7 @@ services:
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
 
   service:
-    image: docker.io/akaddr/net:v0.3.2
+    image: docker.io/akaddr/net:v0.4.0
     environment:
       - DB_HOST=pg-0
       - DB_PORT=5432
@@ -88,6 +88,7 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - KAFKA_BROKERS=kafka:9092
+      - TARANTOOL_ENABLE=true
     ports:
       - "8000:8000"
     depends_on:
