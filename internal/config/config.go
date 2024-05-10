@@ -35,6 +35,10 @@ type EnvSetting struct {
 
 	KafkaBrokers []string `env:"KAFKA_BROKERS" env-default:"kafka:9094" env-description:"comma-separated list of kafka brokers IP:PORT"` //nolint:lll
 
+	TarantoolAddress string `env:"TARANTOOL_ADDRESS" env-default:"tarantool:3301" env-description:"tarantool address to connect to"` //nolint:lll
+	TarantoolUser    string `env:"TARANTOOL_USER" env-default:"guest" env-description:"tarantool address to connect to"`             //nolint:lll
+	TarantoolEnable  bool   `env:"TARANTOOL_ENABLE" env-default:"true" env-description:"tarantool enable"`                           //nolint:lll
+
 	LogLevel string `env:"LOG_LEVEL" env-default:"info" env-description:"log level: trace, debug, info, warn, error, fatal, panic"` //nolint:lll
 }
 
@@ -151,4 +155,16 @@ func (c *Config) GetLogLevel() log.Level {
 	}
 
 	return lvl
+}
+
+func (c *Config) GetAddress() string {
+	return c.env.TarantoolAddress
+}
+
+func (c *Config) GetUSer() string {
+	return c.env.TarantoolUser
+}
+
+func (c *Config) GetTarantoolEnable() bool {
+	return c.env.TarantoolEnable
 }

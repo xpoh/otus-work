@@ -3,6 +3,8 @@ package database
 import (
 	"context"
 	"fmt"
+	tar "github.com/tarantool/go-tarantool/v2"
+	"github.com/xpoh/otus-work/internal/tarantool"
 	"math/rand"
 
 	fakeit "github.com/brianvoe/gofakeit"
@@ -14,11 +16,12 @@ import (
 
 type Instance struct {
 	conn *pgx.Conn
+	tcl  *tarantool.Client
 	cfg  Config
 }
 
-func NewInstance(cfg Config) *Instance {
-	return &Instance{cfg: cfg}
+func NewInstance(cfg Config, tcl *tarantool.Client) *Instance {
+	return &Instance{cfg: cfg, tcl: tcl}
 }
 
 const (
@@ -28,12 +31,13 @@ const (
 	mockDataFriendsPerUser = 20
 )
 
-func createMockData(ctx context.Context, conn *pgx.Conn) error {
+func (i *Instance) createMockData(ctx context.Context, conn *pgx.Conn) error {
 	users := make([]string, 0, mockDataSize*mockDataCount)
 
 	fmt.Printf("Creating mock...")
 	defer fmt.Printf("Done.\n")
 
+	var index int
 	for range mockDataSize {
 		tx, err := conn.Begin(ctx)
 		if err != nil {
@@ -71,17 +75,25 @@ func createMockData(ctx context.Context, conn *pgx.Conn) error {
 			}
 
 			for range rand.Intn(mockDataFriendsPerUser) {
+				randomUser := users[rand.Intn(len(users))]
 				if _, err := conn.Exec(
 					ctx,
 					"INSERT INTO postgres.public.\"Friend\" VALUES ($1,$2,$3)",
 					fakeit.UUID(),
 					userID,
-					users[rand.Intn(len(users))],
+					randomUser,
 				); err != nil {
 					return err
 				}
-			}
 
+				if _, err := i.tcl.Conn.Do(
+					tar.NewInsertRequest("friends").Tuple([]interface{}{index, userID, randomUser}),
+				).Get(); err != nil {
+					log.Errorf("i=%d: %v", index, err)
+				}
+
+				index++
+			}
 		}
 
 		if err := tx.Commit(ctx); err != nil {
@@ -101,7 +113,7 @@ func (i *Instance) Run(ctx context.Context) error {
 
 	if i.cfg.GetMockData() {
 		go func() {
-			if err := createMockData(ctx, i.conn); err != nil {
+			if err := i.createMockData(ctx, i.conn); err != nil {
 				log.Errorf("createMockData(): %v", err)
 			}
 		}()

@@ -15,15 +15,17 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/xpoh/otus-work/internal/config"
 	"github.com/xpoh/otus-work/internal/database"
+	"github.com/xpoh/otus-work/internal/tarantool"
 )
 
 type Instance struct {
 	db  *database.Instance
+	tcl *tarantool.Client
 	rds *redis.Client
 	cfg *config.Config
 }
 
-func NewInstance(db *database.Instance, cfg *config.Config) *Instance {
+func NewInstance(db *database.Instance, tcl *tarantool.Client, cfg *config.Config) *Instance {
 	r := redis.NewClient(&redis.Options{
 		Addr: fmt.Sprintf("%s:%d", cfg.GetRedisHost(), cfg.GetRedisPort()),
 	})
@@ -31,6 +33,7 @@ func NewInstance(db *database.Instance, cfg *config.Config) *Instance {
 	return &Instance{
 		db:  db,
 		rds: r,
+		tcl: tcl,
 		cfg: cfg,
 	}
 }

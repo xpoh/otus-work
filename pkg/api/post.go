@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
+	"github.com/tarantool/go-tarantool/v2"
 	"net/http"
 	"time"
 
@@ -73,6 +74,40 @@ func (i *Instance) friendsList(ctx context.Context, id string) ([]string, error)
 		}
 
 		fiendsID = append(fiendsID, id)
+	}
+
+	return fiendsID, nil
+}
+
+type record struct {
+	id       uint64
+	userID   string
+	friendID string
+}
+
+func (i *Instance) friendsListFromTarantool(ctx context.Context, id string) ([]string, error) {
+	c := i.tcl.Conn
+
+	req := tarantool.NewCallRequest("get_friends")
+	req.Args([]interface{}{id})
+	req.Context(ctx)
+
+	data, err := c.Do(req).Get()
+	if err != nil {
+		return nil, err
+	}
+
+	var fiendsID []string
+	for _, r := range data {
+		list := r.([]interface{})
+		for _, rr := range list {
+			rrr := rr.([]interface{})
+			id1, ok := rrr[2].(string)
+			if !ok {
+				logrus.Errorf("unknown interface %v", r)
+			}
+			fiendsID = append(fiendsID, id1)
+		}
 	}
 
 	return fiendsID, nil
@@ -157,9 +192,19 @@ func (i *Instance) postCreate(ctx context.Context, userID, text string) error {
 }
 
 func (i *Instance) notifyFriends(ctx context.Context, postID, userID, text string) error {
-	friendsID, err := i.friendsList(ctx, userID)
-	if err != nil {
-		return err
+	var friendsID []string
+	var err error
+
+	if i.cfg.GetTarantoolEnable() {
+		friendsID, err = i.friendsListFromTarantool(ctx, userID)
+		if err != nil {
+			return err
+		}
+	} else {
+		friendsID, err = i.friendsList(ctx, userID)
+		if err != nil {
+			return err
+		}
 	}
 
 	kafkaClient := kafka.Writer{
@@ -175,13 +220,14 @@ func (i *Instance) notifyFriends(ctx context.Context, postID, userID, text strin
 		}.String()
 
 		if err := kafkaClient.WriteMessages(ctx, kafka.Message{
-			Topic: id,
-			Value: []byte(message),
+			Topic:     id,
+			Partition: 0,
+			Value:     []byte(message),
 		}); err != nil {
 			return err
 		}
 
-		logrus.Infof(message)
+		logrus.Infof("to: %s: message: %s", id, message)
 	}
 
 	return nil
