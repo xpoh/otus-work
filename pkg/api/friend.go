@@ -30,7 +30,7 @@ func (i *Instance) FriendDeleteUserIdPut(c *gin.Context) {
 
 	logrus.Infof("User %v remove friend %v", userID, friendID)
 
-	if err := i.deleteFriend(context.Background(), userID, friendID); err != nil {
+	if err := i.deleteFriend(c, userID, friendID); err != nil {
 		logrus.Errorf("error removing friend %v: %v", friendID, err)
 
 		c.JSON(http.StatusNotFound, gin.H{"status": "not find"})
@@ -60,7 +60,7 @@ func (i *Instance) FriendSetUserIdPut(c *gin.Context) {
 
 	logrus.Infof("User %v remove friend %v", userID, friendID)
 
-	if err := i.addFriend(context.Background(), friendID, userID); err != nil {
+	if err := i.addFriend(c, friendID, userID); err != nil {
 		logrus.Errorf("error removing friend %v: %v", friendID, err)
 
 		c.JSON(http.StatusNotFound, gin.H{"status": "not find"})

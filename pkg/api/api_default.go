@@ -11,7 +11,6 @@ package api
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"github.com/xpoh/otus-work/internal/config"
 	"github.com/xpoh/otus-work/internal/database"
@@ -36,16 +35,4 @@ func NewInstance(db *database.Instance, tcl *tarantool.Client, cfg *config.Confi
 		tcl: tcl,
 		cfg: cfg,
 	}
-}
-
-// DialogUserIdListGet Get /dialog/:user_id/list
-func (i *Instance) DialogUserIdListGet(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
-}
-
-// DialogUserIdSendPost Post /dialog/:user_id/send
-func (i *Instance) DialogUserIdSendPost(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
 }

@@ -52,7 +52,7 @@ func (i *Instance) UserSearchGet(c *gin.Context) {
 	firstName := c.Query("first_name")
 	lastName := c.Query("last_name")
 
-	users, err := i.search(context.Background(), firstName, lastName)
+	users, err := i.search(c, firstName, lastName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
 		logrus.Errorf("Internal Server Error: %v", err)

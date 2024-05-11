@@ -150,7 +150,7 @@ func (i *Instance) PostFeedGet(c *gin.Context) {
 		c.JSON(http.StatusOK, result)
 	}
 
-	posts, err := i.feed(context.Background(), userID, limit, offset)
+	posts, err := i.feed(c, userID, limit, offset)
 	if err != nil {
 		logrus.Errorf("error getting posts: %v", err)
 
@@ -249,7 +249,7 @@ func (i *Instance) PostCreatePost(c *gin.Context) {
 		return
 	}
 
-	if err := i.postCreate(context.Background(), userID, request.Text); err != nil {
+	if err := i.postCreate(c, userID, request.Text); err != nil {
 		logrus.Errorf("error create post: %v", err)
 
 		c.JSON(http.StatusNotFound, gin.H{"status": "error create post"})

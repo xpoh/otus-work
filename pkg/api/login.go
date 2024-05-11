@@ -55,7 +55,7 @@ func (i *Instance) LoginPost(c *gin.Context) {
 
 	logrus.Debugf("Request: %v", request)
 
-	hash, err := i.login(context.Background(), request.Id, request.Password)
+	hash, err := i.login(c, request.Id, request.Password)
 	if err != nil {
 		c.JSON(404, gin.H{"status": "Пользователь не найден"})
 		logrus.Debugf("Пользователь не найден: %v", c.Request)
