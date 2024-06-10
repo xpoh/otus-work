@@ -14,6 +14,7 @@ func extractClaims(tokenStr string) (jwt.MapClaims, bool) {
 	s := strings.Split(tokenStr, " ")
 
 	hmacSecret := []byte(jwtSignKey)
+
 	token, err := jwt.Parse(s[1], func(token *jwt.Token) (interface{}, error) {
 		// check token signing method etc
 		return hmacSecret, nil
@@ -32,10 +33,12 @@ func extractClaims(tokenStr string) (jwt.MapClaims, bool) {
 
 func getUserIDFromHeader(c *gin.Context) (string, error) {
 	auth := c.Request.Header.Get("Authorization")
+
 	claims, ok := extractClaims(auth)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "Bad request"})
 	}
+
 	userID, ok := claims["user_id"]
 
 	if !ok {

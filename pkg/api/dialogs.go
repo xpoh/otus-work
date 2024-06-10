@@ -2,18 +2,18 @@ package api
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/xpoh/otus-work/pkg/api/models"
-	"net/http"
 )
 
 func (i *Instance) dialogList(ctx *gin.Context, userFrom, userTo string) ([]*models.DialogMessage, error) {
-	c := i.db.GetConn()
+	c := i.click.GetConn()
 
 	rows, err := c.Query(
-		ctx,
 		`select from_user_id, to_user_id, text from "DialogMessage"
           where from_user_id=$1 AND to_user_id=$2`, userFrom, userTo)
 	if err != nil {
@@ -68,14 +68,13 @@ func (i *Instance) DialogUserIdListGet(c *gin.Context) {
 }
 
 func (i *Instance) dialogSend(ctx *gin.Context, userFrom, userTo, text string) error {
-	c := i.db.GetConn()
+	c := i.click.GetConn()
 
-	newID := uuid.New().String()
+	shardKey := int(userFrom[0]+userTo[0]) % i.cfg.GetShardsCount()
 
 	if _, err := c.Exec(
-		ctx,
 		`INSERT INTO "DialogMessage" VALUES ($1,$2,$3,$4)`,
-		newID,
+		shardKey,
 		userFrom,
 		userTo,
 		text,

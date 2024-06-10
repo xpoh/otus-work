@@ -2,13 +2,12 @@ package config
 
 import (
 	"fmt"
-	"os"
-	"reflect"
-	"regexp"
-
 	"github.com/davecgh/go-spew/spew"
 	"github.com/ilyakaznacheev/cleanenv"
 	log "github.com/sirupsen/logrus"
+	"os"
+	"reflect"
+	"regexp"
 )
 
 const (
@@ -28,7 +27,8 @@ type EnvSetting struct {
 	DBName     string `env:"DB_NAME" env-default:"postgres" env-description:"Database name"`
 	DBUser     string `env:"DB_USER" env-default:"postgres" env-description:"Username to connect to DB"`
 	DBPassword string `env:"DB_PASSWORD" env-default:"postgres" env-description:"Password to connect to DB"`
-	MockData   bool   `env:"DB_MOCK_DATA" env-default:"false"`
+
+	MockData bool `env:"DB_MOCK_DATA" env-default:"false"`
 
 	RedisHost string `env:"REDIS_HOST" env-default:"redis"`
 	RedisPort uint16 `env:"REDIS_PORT" env-default:"6379"`
@@ -38,6 +38,12 @@ type EnvSetting struct {
 	TarantoolAddress string `env:"TARANTOOL_ADDRESS" env-default:"tarantool:3301" env-description:"tarantool address to connect to"` //nolint:lll
 	TarantoolUser    string `env:"TARANTOOL_USER" env-default:"guest" env-description:"tarantool address to connect to"`             //nolint:lll
 	TarantoolEnable  bool   `env:"TARANTOOL_ENABLE" env-default:"true" env-description:"tarantool enable"`                           //nolint:lll
+
+	ClickhouseHost string `env:"CLICKHOUSE_HOST" env-default:"localhost" env-description:"hostname or IP of clickhouse server"` //nolint:lll
+	ClickhousePort uint16 `env:"CLICKHOUSE_PORT" env-default:"80" env-description:"clickhouse instance port"`
+	ClickhouseUser string `env:"CLICKHOUSE_USER" env-default:"user" env-description:"clickhouse instance port"`
+	MigrationsPath string `env:"MIGRATIONS_PATH" env-default:"scripts/clickhouse" env-description:"path where clickhouse migrations stored"` //nolint:lll
+	ShardCount     int    `env:"SHARD_COUNT" env-default:"2"`
 
 	LogLevel string `env:"LOG_LEVEL" env-default:"info" env-description:"log level: trace, debug, info, warn, error, fatal, panic"` //nolint:lll
 }
@@ -167,4 +173,16 @@ func (c *Config) GetUSer() string {
 
 func (c *Config) GetTarantoolEnable() bool {
 	return c.env.TarantoolEnable
+}
+
+func (c *Config) GetClickhouseAddress() string {
+	return fmt.Sprintf("%s:%d", c.env.ClickhouseHost, c.env.ClickhousePort)
+}
+
+func (c *Config) GetClickhouseUser() string {
+	return c.env.ClickhouseUser
+}
+
+func (c *Config) GetShardsCount() int {
+	return c.env.ShardCount
 }

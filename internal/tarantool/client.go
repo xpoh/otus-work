@@ -3,8 +3,9 @@ package tarantool
 import (
 	"context"
 	"fmt"
-	"github.com/tarantool/go-tarantool/v2"
 	"time"
+
+	"github.com/tarantool/go-tarantool/v2"
 )
 
 type Config interface {

@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/segmentio/kafka-go"
-	"github.com/tarantool/go-tarantool/v2"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
+	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
+	"github.com/tarantool/go-tarantool/v2"
 	"github.com/xpoh/otus-work/pkg/api/models"
 )
 
@@ -192,8 +192,10 @@ func (i *Instance) postCreate(ctx context.Context, userID, text string) error {
 }
 
 func (i *Instance) notifyFriends(ctx context.Context, postID, userID, text string) error {
-	var friendsID []string
-	var err error
+	var (
+		friendsID []string
+		err       error
+	)
 
 	if i.cfg.GetTarantoolEnable() {
 		friendsID, err = i.friendsListFromTarantool(ctx, userID)

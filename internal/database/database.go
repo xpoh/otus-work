@@ -3,8 +3,6 @@ package database
 import (
 	"context"
 	"fmt"
-	tar "github.com/tarantool/go-tarantool/v2"
-	"github.com/xpoh/otus-work/internal/tarantool"
 	"math/rand"
 
 	fakeit "github.com/brianvoe/gofakeit"
@@ -12,6 +10,8 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"       // for file format supporting
 	"github.com/jackc/pgx/v4"
 	log "github.com/sirupsen/logrus"
+	tar "github.com/tarantool/go-tarantool/v2"
+	"github.com/xpoh/otus-work/internal/tarantool"
 )
 
 type Instance struct {

@@ -12,12 +12,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/xpoh/otus-work/internal/tarantool"
 	"os"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/xpoh/otus-work/internal/clickhouse"
 	"github.com/xpoh/otus-work/internal/config"
 	"github.com/xpoh/otus-work/internal/database"
+	"github.com/xpoh/otus-work/internal/tarantool"
 	sw "github.com/xpoh/otus-work/pkg/api"
 )
 
@@ -27,12 +28,24 @@ func main() {
 
 	initLogger(cfg)
 
+	click := clickhouse.New(cfg)
+	if err := click.Open(); err != nil {
+		log.Panic(err)
+	}
+
+	defer click.Close()
+
+	if err := click.Migrate(); err != nil {
+		log.Panicf("db.Migrate(...): %v", err)
+	}
+
 	ctx := context.Background()
 
 	client, err := tarantool.NewClient(ctx, cfg)
 	if err != nil {
 		log.Panic(err)
 	}
+
 	defer func() {
 		if err := client.Close(); err != nil {
 			log.Error(err)
@@ -43,6 +56,7 @@ func main() {
 	if err := db.Run(ctx); err != nil {
 		log.Panic(err)
 	}
+
 	defer func() {
 		err := db.Stop(ctx)
 		if err != nil {
@@ -51,7 +65,7 @@ func main() {
 	}()
 
 	routes := sw.ApiHandleFunctions{
-		DefaultAPI: sw.NewInstance(db, client, cfg),
+		DefaultAPI: sw.NewInstance(db, client, cfg, click),
 	}
 
 	log.Printf("Server started")
