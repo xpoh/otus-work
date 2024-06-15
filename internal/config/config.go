@@ -46,7 +46,7 @@ type EnvSetting struct {
 	MigrationsPath string `env:"MIGRATIONS_PATH" env-default:"scripts/clickhouse" env-description:"path where clickhouse migrations stored"` //nolint:lll
 	ShardCount     int    `env:"SHARD_COUNT" env-default:"2"`
 
-	DialogsURI string `env:"DIALOGS_URI"          env-default:"localhost:8080"      env-description:"IP:PORT GRPC URI"` //nolint:lll
+	DialogsURI string `env:"DIALOGS_URI"          env-default:"dialogs:8080"      env-description:"IP:PORT GRPC URI"` //nolint:lll
 
 	LogLevel string `env:"LOG_LEVEL" env-default:"info" env-description:"log level: trace, debug, info, warn, error, fatal, panic"` //nolint:lll
 }

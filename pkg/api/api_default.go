@@ -13,11 +13,11 @@ import (
 	"fmt"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/xpoh/otus-work-dialogs/pkg/grpc/dialogs/v1"
 	"github.com/xpoh/otus-work/internal/clickhouse"
 	"github.com/xpoh/otus-work/internal/config"
 	"github.com/xpoh/otus-work/internal/database"
 	"github.com/xpoh/otus-work/internal/tarantool"
-	"github.com/xpoh/otus-work/pkg/grpc/dialogs/v1"
 	"google.golang.org/grpc"
 )
 

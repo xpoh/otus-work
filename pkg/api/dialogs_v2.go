@@ -6,8 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	dialogsV1 "github.com/xpoh/otus-work-dialogs/pkg/grpc/dialogs/v1"
 	"github.com/xpoh/otus-work/pkg/api/models"
-	dialogsV1 "github.com/xpoh/otus-work/pkg/grpc/dialogs/v1"
 )
 
 // DialogUserIdListGetV2 Get /v2/dialog/:user_id/list

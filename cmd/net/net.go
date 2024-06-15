@@ -12,8 +12,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	"os"
 
+	"github.com/gin-contrib/requestid"
 	log "github.com/sirupsen/logrus"
 	"github.com/xpoh/otus-work/internal/clickhouse"
 	"github.com/xpoh/otus-work/internal/config"
@@ -72,6 +74,14 @@ func main() {
 
 	router := sw.NewRouter(routes)
 	router.LoadHTMLGlob("index.html")
+	router.Use(
+		requestid.New(
+			requestid.WithGenerator(func() string {
+				return uuid.New().String()
+			}),
+			requestid.WithCustomHeaderStrKey("x-request-id"),
+		),
+	)
 
 	log.Panic(router.Run(fmt.Sprintf("%s:%s", cfg.GetHost(), cfg.GetPort())))
 }
