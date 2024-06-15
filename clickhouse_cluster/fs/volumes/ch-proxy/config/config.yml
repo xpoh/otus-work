@@ -1,0 +1,18 @@
+server:
+  http:
+    listen_addr: ':80'
+    allowed_networks: ['127.0.0.0/24', '20.20.7.0/24']
+users:
+  - name: 'user'
+    to_cluster: 'cluster_2S_1R'
+    to_user: 'default'
+    max_concurrent_queries: 0
+    max_execution_time: 300s
+    requests_per_minute: 0
+    # Allow `CORS` requests for `tabix`.
+    allow_cors: true
+clusters:
+  - name: 'cluster_2S_1R'
+    nodes: ['clickhouse-01:8123', 'clickhouse-02:8123']
+    users:
+      - name: 'default'

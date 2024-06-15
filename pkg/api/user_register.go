@@ -47,7 +47,7 @@ func (i *Instance) UserRegisterPost(c *gin.Context) {
 
 	logrus.Debugf("Request: %v", request)
 
-	id, err := i.register(context.Background(), request)
+	id, err := i.register(c, request)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
 		logrus.Errorf("Internal Server Error: %v", err)

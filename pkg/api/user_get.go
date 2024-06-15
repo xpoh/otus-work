@@ -37,7 +37,7 @@ func (i *Instance) get(ctx context.Context, id string) (*models.User, error) {
 func (i *Instance) UserGetIdGet(c *gin.Context) {
 	id := c.Param("id")
 
-	user, err := i.get(context.Background(), id)
+	user, err := i.get(c, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
 		logrus.Errorf("Internal Server Error: %v", err)

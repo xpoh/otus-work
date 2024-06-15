@@ -1,11 +1,11 @@
 package api
 
 import (
-	"github.com/segmentio/kafka-go"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/segmentio/kafka-go"
 	log "github.com/sirupsen/logrus"
 )
 

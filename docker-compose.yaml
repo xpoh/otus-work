@@ -80,7 +80,7 @@ services:
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
 
   service:
-    image: docker.io/akaddr/net:v0.4.0
+    image: docker.io/akaddr/net:v0.5.0
     environment:
       - DB_HOST=pg-0
       - DB_PORT=5432

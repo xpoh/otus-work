@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/segmentio/kafka-go"
-	"github.com/tarantool/go-tarantool/v2"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
+	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
+	"github.com/tarantool/go-tarantool/v2"
 	"github.com/xpoh/otus-work/pkg/api/models"
 )
 
@@ -150,7 +150,7 @@ func (i *Instance) PostFeedGet(c *gin.Context) {
 		c.JSON(http.StatusOK, result)
 	}
 
-	posts, err := i.feed(context.Background(), userID, limit, offset)
+	posts, err := i.feed(c, userID, limit, offset)
 	if err != nil {
 		logrus.Errorf("error getting posts: %v", err)
 
@@ -192,8 +192,10 @@ func (i *Instance) postCreate(ctx context.Context, userID, text string) error {
 }
 
 func (i *Instance) notifyFriends(ctx context.Context, postID, userID, text string) error {
-	var friendsID []string
-	var err error
+	var (
+		friendsID []string
+		err       error
+	)
 
 	if i.cfg.GetTarantoolEnable() {
 		friendsID, err = i.friendsListFromTarantool(ctx, userID)
@@ -249,7 +251,7 @@ func (i *Instance) PostCreatePost(c *gin.Context) {
 		return
 	}
 
-	if err := i.postCreate(context.Background(), userID, request.Text); err != nil {
+	if err := i.postCreate(c, userID, request.Text); err != nil {
 		logrus.Errorf("error create post: %v", err)
 
 		c.JSON(http.StatusNotFound, gin.H{"status": "error create post"})
