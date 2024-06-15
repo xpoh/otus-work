@@ -2,12 +2,13 @@ package config
 
 import (
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/ilyakaznacheev/cleanenv"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"reflect"
 	"regexp"
+
+	"github.com/davecgh/go-spew/spew"
+	"github.com/ilyakaznacheev/cleanenv"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -44,6 +45,8 @@ type EnvSetting struct {
 	ClickhouseUser string `env:"CLICKHOUSE_USER" env-default:"user" env-description:"clickhouse instance port"`
 	MigrationsPath string `env:"MIGRATIONS_PATH" env-default:"scripts/clickhouse" env-description:"path where clickhouse migrations stored"` //nolint:lll
 	ShardCount     int    `env:"SHARD_COUNT" env-default:"2"`
+
+	DialogsURI string `env:"DIALOGS_URI"          env-default:"dialogs:8080"      env-description:"IP:PORT GRPC URI"` //nolint:lll
 
 	LogLevel string `env:"LOG_LEVEL" env-default:"info" env-description:"log level: trace, debug, info, warn, error, fatal, panic"` //nolint:lll
 }
@@ -185,4 +188,8 @@ func (c *Config) GetClickhouseUser() string {
 
 func (c *Config) GetShardsCount() int {
 	return c.env.ShardCount
+}
+
+func (c *Config) GetDialogsURI() string {
+	return c.env.DialogsURI
 }

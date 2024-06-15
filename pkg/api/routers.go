@@ -81,6 +81,18 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			handleFunctions.DefaultAPI.DialogUserIdSendPost,
 		},
 		{
+			"DialogUserIdListGetV2",
+			http.MethodGet,
+			"/v2/dialog/:user_id/list",
+			handleFunctions.DefaultAPI.DialogUserIdListGetV2,
+		},
+		{
+			"DialogUserIdSendPostV2",
+			http.MethodPost,
+			"/v2/dialog/:user_id/send",
+			handleFunctions.DefaultAPI.DialogUserIdSendPostV2,
+		},
+		{
 			"FriendDeleteUserIdPut",
 			http.MethodPut,
 			"/friend/delete/:user_id",
