@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package dialogs.v1;
+
+option go_package = "github.com/xpoh/otus-work/pkg/grpc/dialogs/v1;dialogs";
+
+service DialogService {
+  rpc Send(SendRequest) returns (SendResponse) {}
+  rpc List(ListRequest) returns (ListResponse) {}
+}
+
+message SendRequest {
+  string user_from = 1;
+  string user_to = 2;
+  string text = 3;
+}
+message SendResponse {}
+
+message ListRequest {
+  string user_from = 1;
+  string user_to = 2;
+}
+
+message ListResponse {
+    repeated string text = 1;
+}

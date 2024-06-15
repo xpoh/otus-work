@@ -11,20 +11,23 @@ package api
 
 import (
 	"fmt"
-	"github.com/xpoh/otus-work/internal/clickhouse"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/xpoh/otus-work/internal/clickhouse"
 	"github.com/xpoh/otus-work/internal/config"
 	"github.com/xpoh/otus-work/internal/database"
 	"github.com/xpoh/otus-work/internal/tarantool"
+	"github.com/xpoh/otus-work/pkg/grpc/dialogs/v1"
+	"google.golang.org/grpc"
 )
 
 type Instance struct {
-	db    *database.Instance
-	tcl   *tarantool.Client
-	rds   *redis.Client
-	click *clickhouse.Client
-	cfg   *config.Config
+	db            *database.Instance
+	tcl           *tarantool.Client
+	rds           *redis.Client
+	click         *clickhouse.Client
+	cfg           *config.Config
+	dialogsClient dialogs.DialogServiceClient
 }
 
 func NewInstance(
@@ -37,11 +40,17 @@ func NewInstance(
 		Addr: fmt.Sprintf("%s:%d", cfg.GetRedisHost(), cfg.GetRedisPort()),
 	})
 
+	conn, err := grpc.NewClient(cfg.GetDialogsURI())
+	if err != nil {
+		panic(err)
+	}
+
 	return &Instance{
-		db:    db,
-		rds:   r,
-		tcl:   tcl,
-		cfg:   cfg,
-		click: click,
+		db:            db,
+		rds:           r,
+		tcl:           tcl,
+		cfg:           cfg,
+		click:         click,
+		dialogsClient: dialogs.NewDialogServiceClient(conn),
 	}
 }
