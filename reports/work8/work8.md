@@ -10,3 +10,5 @@
    - основной сервис выключается в композе `docker compose stop service`
    - основной сервис запускается, как приложение `go run ./cmd/dialogs/dialogs.go`
    - для запуска сервисов можно воспользоваться бинарниками в папке bin
+
+https://github.com/xpoh/otus-work/pull/13
