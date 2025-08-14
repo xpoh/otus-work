@@ -25,6 +25,7 @@ docker compose exec superset `pip install clickhouse-connect`
 * Выполнить команду `docker-compose up -d` в текущем репозитории
 * Настроить сетевое устройство для отправки Netflow данных на порт 6343 сервиса goflow.
 * зайти на панель superset http://localhost:8080/
+* Выполнить миграцию базы: [create.sh](fs/volumes/clickhouse/create.sh)
 
 ```plantuml
 @startuml
