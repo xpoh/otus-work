@@ -1,0 +1,162 @@
+services:
+  clickhouse:
+    image: 'clickhouse/clickhouse-server:${CHVER:-latest}'
+    user: '101:101'
+    container_name: clickhouse
+    hostname: clickhouse
+    volumes:
+      - ${PWD}/fs/volumes/clickhouse:/docker-entrypoint-initdb.d/
+      - ${PWD}/fs/volumes/clickhouse/etc/clickhouse-server/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
+      - ${PWD}/fs/volumes/clickhouse/etc/clickhouse-server/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
+      - ${PWD}/fs/volumes/pb-ext/flow.proto:/var/lib/clickhouse/format_schemas/flow.proto
+    ports:
+      - '127.0.0.1:8123:8123'
+      - '127.0.0.1:9000:9000'
+    depends_on:
+      - clickhouse-keeper
+    networks:
+      - final_project_default
+  clickhouse-keeper:
+    image: 'clickhouse/clickhouse-keeper:${CHKVER:-latest-alpine}'
+    user: '101:101'
+    container_name: clickhouse-keeper
+    hostname: clickhouse-keeper
+    volumes:
+      - ${PWD}/fs/volumes/clickhouse-keeper/etc/clickhouse-keeper/keeper_config.xml:/etc/clickhouse-keeper/keeper_config.xml
+    ports:
+      - '127.0.0.1:9181:9181'
+    networks:
+      - final_project_default
+
+  goflow:
+    image: cloudflare/goflow:latest
+    container_name: goflow
+    restart: unless-stopped
+    entrypoint: '/bin/sh'
+    command: >
+      -c "sleep 15 ;
+      /goflow -kafka.brokers kafka:9092
+      -kafka.topic flows
+      -proto.fixedlen=true
+      "
+    ports:
+      - '8081:8080'
+      - '6343:6343/udp'
+      - '2055:2055/udp'
+    networks:
+      - final_project_default
+
+  kafka:
+    image: docker.io/bitnami/kafka:4.0
+    ports:
+      - "9092:9092"
+    environment:
+      # KRaft settings
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      # Listeners
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+    networks:
+      - final_project_default
+
+  # Optional: Kafka UI (Web Interface)
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    restart: unless-stopped
+    depends_on:
+      - kafka
+    ports:
+      - "8082:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local-kraft
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    networks:
+      - final_project_default
+
+  postgresql:
+    image: docker.io/bitnami/postgresql:latest
+    volumes:
+      - ${PWD}/fs/volumes/postgres/data:/bitnami/postgresql'
+    environment:
+      - POSTGRESQL_DATABASE=bitnami_airflow
+      - POSTGRESQL_USERNAME=bn_airflow
+      - POSTGRESQL_PASSWORD=bitnami1
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - final_project_default
+  redis:
+    image: docker.io/bitnami/redis:latest
+    environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - final_project_default
+  airflow-scheduler:
+    image: docker.io/bitnami/airflow:3
+    environment:
+      - AIRFLOW_COMPONENT_TYPE=scheduler
+      - AIRFLOW_DATABASE_NAME=bitnami_airflow
+      - AIRFLOW_DATABASE_USERNAME=bn_airflow
+      - AIRFLOW_DATABASE_PASSWORD=bitnami1
+      - AIRFLOW_EXECUTOR=CeleryExecutor
+      - AIRFLOW_APISERVER_HOST=airflow
+    networks:
+      - final_project_default
+  airflow-triggerer:
+    image: docker.io/bitnami/airflow:3
+    environment:
+      - AIRFLOW_COMPONENT_TYPE=triggerer
+      - AIRFLOW_DATABASE_NAME=bitnami_airflow
+      - AIRFLOW_DATABASE_USERNAME=bn_airflow
+      - AIRFLOW_DATABASE_PASSWORD=bitnami1
+      - AIRFLOW_EXECUTOR=CeleryExecutor
+      - AIRFLOW_APISERVER_HOST=airflow
+    networks:
+      - final_project_default
+  airflow-dag-processor:
+    image: docker.io/bitnami/airflow:3
+    environment:
+      - AIRFLOW_COMPONENT_TYPE=dag-processor
+      - AIRFLOW_DATABASE_NAME=bitnami_airflow
+      - AIRFLOW_DATABASE_USERNAME=bn_airflow
+      - AIRFLOW_DATABASE_PASSWORD=bitnami1
+      - AIRFLOW_EXECUTOR=CeleryExecutor
+      - AIRFLOW_APISERVER_HOST=airflow
+    networks:
+      - final_project_default
+  airflow-worker:
+    image: docker.io/bitnami/airflow:3
+    environment:
+      - AIRFLOW_COMPONENT_TYPE=worker
+      - AIRFLOW_DATABASE_NAME=bitnami_airflow
+      - AIRFLOW_DATABASE_USERNAME=bn_airflow
+      - AIRFLOW_DATABASE_PASSWORD=bitnami1
+      - AIRFLOW_EXECUTOR=CeleryExecutor
+      - AIRFLOW_APISERVER_HOST=airflow
+    networks:
+      - final_project_default
+  airflow:
+    image: docker.io/bitnami/airflow:3
+    environment:
+      - AIRFLOW_DATABASE_NAME=bitnami_airflow
+      - AIRFLOW_DATABASE_USERNAME=bn_airflow
+      - AIRFLOW_DATABASE_PASSWORD=bitnami1
+      - AIRFLOW_EXECUTOR=CeleryExecutor
+    ports:
+      - '8080:8080'
+    volumes:
+      - ${PWD}/fs/volumes/airflow/dags:/opt/bitnami/airflow/dags
+      - ${PWD}/fs/volumes/airflow/requirements.txt:/bitnami/python/requirements.txt
+    networks:
+      - final_project_default
+
+networks:
+  final_project_default:
+    external: true
