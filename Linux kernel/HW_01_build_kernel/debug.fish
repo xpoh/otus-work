@@ -1,7 +1,7 @@
 scripts/config --enable CONFIG_SECURITY_SELINUX
 scripts/config --enable CONFIG_SECURITY_SMACK
 scripts/config --enable CONFIG_SECURITY_TOMOYO
-scripts/config --disable CONFIG_SECURITY_APPARMOR
+scripts/config --enable CONFIG_SECURITY_APPARMOR
 scripts/config --enable CONFIG_SECURITY_YAMA
 scripts/config --enable CONFIG_RANDOMIZE_BASE
 scripts/config --enable CONFIG_CPU_MITIGATIONS
@@ -47,3 +47,4 @@ scripts/config --disable SYSTEM_REVOCATION_KEYS
 scripts/config --disable MODULE_SIG
 scripts/config --disable MODULE_SIG_ALL
 scripts/config --disable MODULE_SIG_FORCE
+scripts/config --disable CONFIG_DEBUG_INFO_NONE
