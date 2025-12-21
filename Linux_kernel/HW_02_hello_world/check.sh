@@ -43,5 +43,7 @@ echo ""
 
 param_get my_str
 
+echo ""
+
 echo "try set my_str directly and wait error"
 param_set my_str "hello"
