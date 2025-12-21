@@ -78,5 +78,5 @@ module_init(hello_init);
 module_exit(hello_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Viacheslav Stepanov");
+MODULE_AUTHOR("Dmitriy Rekunov");
 MODULE_DESCRIPTION("A simple Hello World module for the Linux kernel");
