@@ -6,7 +6,7 @@ then
     exit 1
 fi
 
-PACKAGE_NAME="my_module"
+PACKAGE_NAME="work_module"
 PACKAGE_VERSION="1.0"
 
 function install_module()
@@ -15,7 +15,8 @@ function install_module()
     mkdir $dkms_src
 
     cp Makefile $dkms_src
-    cp my_module.c $dkms_src
+    cp *.c $dkms_src
+    cp *.h $dkms_src
     cp dkms.conf $dkms_src
 
     sed -i -e "s/P_NAME/$PACKAGE_NAME/g" \
@@ -25,7 +26,7 @@ function install_module()
     /usr/sbin/dkms install "$PACKAGE_NAME/$PACKAGE_VERSION"
 }
 
-function remove_module
+function uninstall_module
 {
     local dkms_src="/usr/src/$PACKAGE_NAME-$PACKAGE_VERSION"
     /usr/sbin/dkms remove "$PACKAGE_NAME/$PACKAGE_VERSION"
@@ -36,8 +37,8 @@ case "$1" in
     install)
         install_module
         ;;
-    remove)
-        remove_module
+    uninstall)
+        uninstall_module
         ;;
     *)
         echo "Usage: $0 [action]"
