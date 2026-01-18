@@ -22,7 +22,7 @@
 ```c
 struct stack {
     struct list_head elements;      /* Голова связного списка */
-    int size;                       /* Текущее количество элементов */
+    int size;                        /* Текущее количество элементов */
 };
 ```
 
@@ -123,32 +123,32 @@ kernel_stack_module/
 sudo insmod kernel_stack.ko
 
 # Добавить элементы
-echo 10 > /sys/kernel/kernel_stack/push
-echo 20 > /sys/kernel/kernel_stack/push
-echo 30 > /sys/kernel/kernel_stack/push
+echo 10 > /sys/linux/kernel_stack/push
+echo 20 > /sys/linux/kernel_stack/push
+echo 30 > /sys/linux/kernel_stack/push
 
 # Проверить размер
-cat /sys/kernel/kernel_stack/size
+cat /sys/linux/kernel_stack/size
 # Вывод: 3
 
 # Получить вершину без удаления
-cat /sys/kernel/kernel_stack/peek
+cat /sys/linux/kernel_stack/peek
 # Вывод: 30
 
 # Удалить и получить элемент
-cat /sys/kernel/kernel_stack/pop
+cat /sys/linux/kernel_stack/pop
 # Вывод: 30
 
 # Проверить новый размер
-cat /sys/kernel/kernel_stack/size
+cat /sys/linux/kernel_stack/size
 # Вывод: 2
 
 # Проверить пустоту
-cat /sys/kernel/kernel_stack/is_empty
+cat /sys/linux/kernel_stack/is_empty
 # Вывод: 0
 
 # Очистить стек
-echo 1 > /sys/kernel/kernel_stack/clear
+echo 1 > /sys/linux/kernel_stack/clear
 
 # Выгрузить модуль
 sudo rmmod kernel_stack
