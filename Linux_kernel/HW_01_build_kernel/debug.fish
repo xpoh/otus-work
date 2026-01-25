@@ -34,6 +34,7 @@ scripts/config --enable CONFIG_SERIAL_CONSOLE
 scripts/config --enable CONFIG_CONSOLE_POLL
 scripts/config --enable CONFIG_KPROBES
 scripts/config --enable CONFIG_KPROBE_EVENT
+
 scripts/config --disable BASE_SMALL
 scripts/config --disable FB_BACKLIGHT
 scripts/config --disable HYPERV
