@@ -1,0 +1,25 @@
+# Build artifacts
+*.o
+*.ko
+*.mod
+*.mod.c
+*.order
+*.symvers
+.*.cmd
+.tmp_versions/
+Module.symvers
+modules.order
+
+# Linux kernel headers symlink
+linux
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Compiled objects
+src/*.o
+.module-common.o
