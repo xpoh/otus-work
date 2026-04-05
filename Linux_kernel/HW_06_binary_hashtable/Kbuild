@@ -1,0 +1,5 @@
+DRV_NAME := kernel_hashtable_search
+
+$(DRV_NAME)-y := src/main.o src/params.o src/build.o src/search.o
+
+obj-m := $(DRV_NAME).o
