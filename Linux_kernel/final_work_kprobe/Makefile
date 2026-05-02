@@ -6,7 +6,7 @@ C_INCLUDE_PATH=$(KERNEL_DIR)
 DRV_NAME := kprobe_traffic
 include Kbuild
 
-.PHONY: all build run remove install uninstall clean format check restart test
+.PHONY: all build run remove install uninstall clean format check restart test test-params
 
 all: build
 
@@ -44,9 +44,20 @@ restart: remove build run clean
 test: build
 	@echo "Testing kprobe_traffic module..."
 	sudo insmod $(PWD)/$(DRV_NAME).ko
-	@echo "Module loaded"
+	@sleep 1
+	sudo dmesg | tail -10
+	sudo rmmod $(DRV_NAME)
+	@echo "Test completed"
+
+test-params: build
+	@echo "Testing kprobe_traffic module params..."
+	sudo insmod $(PWD)/$(DRV_NAME).ko
+	@sleep 1
+	cat /sys/module/$(DRV_NAME)/parameters/top_n
+	echo 42 | sudo tee /sys/module/$(DRV_NAME)/parameters/top_n
+	cat /sys/module/$(DRV_NAME)/parameters/top_n
 	@sleep 2
-	@echo "Checking kprobe output..."
-	sudo dmesg | tail -20
+	cat /sys/module/$(DRV_NAME)/parameters/top_addrs
+	sudo dmesg | tail -10
 	sudo rmmod $(DRV_NAME)
 	@echo "Test completed"

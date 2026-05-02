@@ -13,12 +13,13 @@ static int top_addrs_get(char *buf, const struct kernel_param *kp) {
     return strlen(buf);
 }
 
+
 static const struct kernel_param_ops top_addrs_ops = {
     .get = top_addrs_get,
 };
 
 module_param_cb(top_addrs, &top_addrs_ops, NULL, 0444);
-MODULE_PARM_DESC(top_addrs, "top N addresses by traffic");
+MODULE_PARM_DESC(top_addrs, "top N addresses by traffic (read only)");
 
 int params_init(void) { return 0; }
 
