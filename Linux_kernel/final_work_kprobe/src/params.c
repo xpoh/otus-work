@@ -10,9 +10,8 @@ module_param(top_n, int, 0644);
 MODULE_PARM_DESC(top_n, "number of top addresses to report");
 
 static int top_addrs_get(char *buf, const struct kernel_param *kp) {
-    return strlen(buf);
+    return snprintf(buf, PAGE_SIZE, "stub: no data yet\n");
 }
-
 
 static const struct kernel_param_ops top_addrs_ops = {
     .get = top_addrs_get,
