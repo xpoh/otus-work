@@ -6,13 +6,12 @@
 
 #include "../inc/param.h"
 #include "../inc/stats.h"
+#include "../inc/kprobe_traffic.h"
 
 static int __init kprobe_traffic_init(void) {
   pr_info("init\n");
 
-  int ret;
-
-  ret = stats_init();
+  int ret = stats_init();
   if (ret) {
     pr_err("failed to init stats\n");
 
@@ -28,10 +27,21 @@ static int __init kprobe_traffic_init(void) {
     return ret;
   }
 
+  ret = kprobe_traffic_register();
+  if (ret) {
+    pr_err("failed to register kprobes\n");
+
+    params_exit();
+    stats_exit();
+
+    return ret;
+  }
+
   return 0;
 }
 
 static void __exit kprobe_traffic_exit(void) {
+  kprobe_traffic_unregister();
   params_exit();
   stats_exit();
 
