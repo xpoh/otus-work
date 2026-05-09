@@ -27,20 +27,30 @@ const (
 type Collector struct {
 	srv *http.Server
 
-	traffic  *prometheus.GaugeVec
-	topAddrs prometheus.Gauge
+	trafficRecv *prometheus.GaugeVec
+	trafficSend *prometheus.GaugeVec
+	topAddrs    prometheus.Gauge
 }
 
 const addr = ":2112"
 
 func New() *Collector {
 	c := &Collector{
-		traffic: promauto.NewGaugeVec(
+		trafficRecv: promauto.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Namespace: namespace,
 				Subsystem: subsystem,
-				Name:      "traffic_bytes",
-				Help:      "Total traffic bytes per session (src_ip : dst_ip)",
+				Name:      "traffic_recv_bytes",
+				Help:      "Total recv traffic bytes per session (src_ip : dst_ip)",
+			},
+			[]string{"src_ip", "dst_ip"},
+		),
+		trafficSend: promauto.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Namespace: namespace,
+				Subsystem: subsystem,
+				Name:      "traffic_send_bytes",
+				Help:      "Total send traffic bytes per session (src_ip : dst_ip)",
 			},
 			[]string{"src_ip", "dst_ip"},
 		),
@@ -114,7 +124,8 @@ func (c *Collector) Stop(ctx context.Context) {
 }
 
 func (c *Collector) Update() error {
-	c.traffic.Reset()
+	c.trafficRecv.Reset()
+	c.trafficSend.Reset()
 
 	entries, err := readTopAddrs()
 	if err != nil {
@@ -122,7 +133,8 @@ func (c *Collector) Update() error {
 	}
 
 	for _, e := range entries {
-		c.traffic.WithLabelValues(e.src, e.dst).Set(float64(e.bytes))
+		c.trafficRecv.WithLabelValues(e.src, e.dst).Set(float64(e.recvBytes))
+		c.trafficSend.WithLabelValues(e.src, e.dst).Set(float64(e.sendBytes))
 	}
 
 	c.topAddrs.Set(float64(len(entries)))
@@ -130,9 +142,10 @@ func (c *Collector) Update() error {
 }
 
 type entry struct {
-	src   string
-	dst   string
-	bytes uint64
+	src       string
+	dst       string
+	recvBytes uint64
+	sendBytes uint64
 }
 
 func readTopAddrs() ([]entry, error) {
@@ -160,15 +173,25 @@ func readTopAddrs() ([]entry, error) {
 
 		src := strings.TrimSpace(parts[0])
 		dst := strings.TrimSpace(parts[1])
-		bytesStr := strings.TrimSpace(parts[2])
-
-		bytes, err := strconv.ParseUint(bytesStr, 10, 64)
-		if err != nil {
-			log.Printf("parse bytes error: %v", err)
+		counts := strings.Fields(parts[2])
+		if len(counts) != 2 {
+			log.Printf("malformed counts in line: %s", line)
 			continue
 		}
 
-		entries = append(entries, entry{src: src, dst: dst, bytes: bytes})
+		recvBytes, err := strconv.ParseUint(counts[0], 10, 64)
+		if err != nil {
+			log.Printf("parse recv_bytes error: %v", err)
+			continue
+		}
+		sendBytes, err := strconv.ParseUint(counts[1], 10, 64)
+		if err != nil {
+			log.Printf("parse send_bytes error: %v", err)
+			continue
+		}
+
+		entries = append(entries, entry{src: src, dst: dst,
+			recvBytes: recvBytes, sendBytes: sendBytes})
 	}
 
 	if err := scanner.Err(); err != nil {

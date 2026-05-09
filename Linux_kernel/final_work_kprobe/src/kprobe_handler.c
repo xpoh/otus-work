@@ -20,6 +20,7 @@ struct send_data {
 struct recv_data {
   __be32 daddr;
   __be32 saddr;
+  int copied;
 };
 
 static int send_entry_handler(struct kretprobe_instance *ri,
@@ -52,7 +53,7 @@ static int send_ret_handler(struct kretprobe_instance *ri,
   struct send_data *data = (struct send_data *)ri->data;
 
   if (retval > 0 && data->saddr && data->daddr)
-    stats_record_traffic(data->saddr, data->daddr, (size_t)retval);
+    stats_record_traffic(data->saddr, data->daddr, true, (size_t)retval);
 
   return 0;
 }
@@ -73,10 +74,12 @@ static int recv_entry_handler(struct kretprobe_instance *ri,
 
     data->daddr = inet_sk(sk)->inet_daddr;
     data->saddr = inet_sk(sk)->inet_saddr;
+    data->copied = (int)regs->si;
   }
 #else
   data->daddr = 0;
   data->saddr = 0;
+  data->copied = 0;
 #endif
   return 0;
 }
@@ -85,11 +88,11 @@ NOKPROBE_SYMBOL(recv_entry_handler);
 
 static int recv_ret_handler(struct kretprobe_instance *ri,
                             struct pt_regs *regs) {
-  unsigned long retval = regs_return_value(regs);
   struct recv_data *data = (struct recv_data *)ri->data;
 
-  if (retval > 0 && data->saddr && data->daddr)
-    stats_record_traffic(data->saddr, data->daddr, (size_t)retval);
+  if (data->copied > 0 && data->saddr && data->daddr)
+    stats_record_traffic(data->saddr, data->daddr, false,
+                         (size_t)data->copied);
 
   return 0;
 }

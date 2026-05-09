@@ -40,8 +40,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 6,
+        "h": 9,
+        "w": 3,
         "x": 0,
         "y": 0
       },
@@ -134,9 +134,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 18,
-        "x": 6,
+        "h": 9,
+        "w": 10,
+        "x": 3,
         "y": 0
       },
       "id": 3,
@@ -165,13 +165,110 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "kprobe_traffic_stats_traffic_bytes",
-          "legendFormat": "{{src_ip}} → {{dst_ip}}",
+          "expr": "kprobe_traffic_stats_traffic_recv_bytes",
+          "legendFormat": "recv {{src_ip}} → {{dst_ip}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Top 10 Sessions by Traffic",
+      "title": "Top 10 Sessions by Traffic (Recv)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 11,
+        "x": 13,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Last *",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.6.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "kprobe_traffic_stats_traffic_send_bytes",
+          "legendFormat": "send {{src_ip}} → {{dst_ip}}",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Top 10 Sessions by Traffic (Send)",
       "type": "timeseries"
     },
     {
@@ -198,9 +295,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
+        "w": 3,
         "x": 0,
-        "y": 8
+        "y": 9
       },
       "id": 1,
       "options": {
@@ -227,7 +324,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(kprobe_traffic_stats_traffic_bytes)",
+          "expr": "sum(kprobe_traffic_stats_traffic_recv_bytes) + sum(kprobe_traffic_stats_traffic_send_bytes)",
           "refId": "A"
         }
       ],
@@ -292,9 +389,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 18,
-        "x": 6,
-        "y": 8
+        "w": 10,
+        "x": 3,
+        "y": 9
       },
       "id": 4,
       "options": {
@@ -322,13 +419,110 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(kprobe_traffic_stats_traffic_bytes[$__interval])",
-          "legendFormat": "{{src_ip}} → {{dst_ip}}",
+          "expr": "rate(kprobe_traffic_stats_traffic_recv_bytes[$__interval])",
+          "legendFormat": "recv {{src_ip}} → {{dst_ip}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Top 10 Sessions by Traffic",
+      "title": "Top 10 Sessions by Traffic (Recv)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "binBps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 11,
+        "x": 13,
+        "y": 9
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Last *",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.6.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "rate(kprobe_traffic_stats_traffic_send_bytes[$__interval])",
+          "legendFormat": "recv {{src_ip}} → {{dst_ip}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Top 10 Sessions by Traffic (Send)",
       "type": "timeseries"
     }
   ],
@@ -350,5 +544,5 @@
   "timezone": "browser",
   "title": "Kprobe Traffic",
   "uid": "kprobe_traffic",
-  "version": 3
+  "version": 2
 }

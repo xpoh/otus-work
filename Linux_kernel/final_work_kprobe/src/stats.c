@@ -30,14 +30,18 @@ void stats_exit(void) {
   spin_unlock(&stats_lock);
 }
 
-void stats_record_traffic(__be32 saddr, __be32 daddr, size_t bytes) {
+void stats_record_traffic(__be32 saddr, __be32 daddr, bool is_send,
+                         size_t bytes) {
   struct addr_stat *entry;
   u64 key = ((u64)saddr << 32) | (u32)daddr;
 
   spin_lock(&stats_lock);
   hash_for_each_possible(addr_stats, entry, node, key) {
     if (entry->saddr == saddr && entry->daddr == daddr) {
-      entry->bytes += bytes;
+      if (is_send)
+        entry->send_bytes += bytes;
+      else
+        entry->recv_bytes += bytes;
       spin_unlock(&stats_lock);
       return;
     }
@@ -51,18 +55,23 @@ void stats_record_traffic(__be32 saddr, __be32 daddr, size_t bytes) {
 
   entry->saddr = saddr;
   entry->daddr = daddr;
-  entry->bytes = bytes;
+  entry->recv_bytes = is_send ? 0 : bytes;
+  entry->send_bytes = is_send ? bytes : 0;
   hash_add(addr_stats, &entry->node, key);
   spin_unlock(&stats_lock);
+}
+
+static u64 total_bytes(const struct addr_stat *s) {
+  return s->recv_bytes + s->send_bytes;
 }
 
 static int cmp_bytes_desc(const void *a, const void *b) {
   const struct addr_stat *sa = *(const struct addr_stat **)a;
   const struct addr_stat *sb = *(const struct addr_stat **)b;
 
-  if (sa->bytes < sb->bytes)
+  if (total_bytes(sa) < total_bytes(sb))
     return 1;
-  if (sa->bytes > sb->bytes)
+  if (total_bytes(sa) > total_bytes(sb))
     return -1;
   return 0;
 }
@@ -101,9 +110,9 @@ void stats_get_top(char *buf, size_t len, int top_n) {
   sort(entries, allocated, sizeof(*entries), cmp_bytes_desc, NULL);
 
   for (i = 0; i < top_n && pos < len; i++) {
-    int n = scnprintf(buf + pos, len - pos, "%pI4 : %pI4: %llu\n",
-                      &entries[i]->saddr, &entries[i]->daddr,
-                      entries[i]->bytes);
+    int n = scnprintf(buf + pos, len - pos, "%pI4 : %pI4: %llu %llu\n",
+                       &entries[i]->saddr, &entries[i]->daddr,
+                       entries[i]->recv_bytes, entries[i]->send_bytes);
     if (!n)
       break;
     pos += n;

@@ -12,6 +12,8 @@ all: build run deploy
 
 all-down: deploy-down remove clean
 
+defconfig: build
+
 build:
 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules
 
