@@ -1,8 +1,6 @@
 #ifndef KPROBE_TRAFFIC_H
 #define KPROBE_TRAFFIC_H
 
-#include <linux/hashtable.h>
-
 #define MAX_TOP_ADDRS 100
 #define ADDR_STATS_HASH_BITS 8
 

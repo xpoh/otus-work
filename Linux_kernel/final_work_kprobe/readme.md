@@ -1,4 +1,4 @@
-# Тема выпускной работы
+# Тема проектной работы
 
 ## "Разработка модуля ядра сбора статистики сетевых подключений - N адресов с самым большим количеством проходящего трафика»"
 
@@ -20,62 +20,75 @@
 | `check`       | Проверка успешной сборки модуля                              |
 | `restart`     | Цикл `remove` → `build` → `run` → `clean`                   |
 | `test`        | Загрузка модуля, вывод `dmesg`, выгрузка модуля              |
-| `test-params` | Тест параметра `top_n` (чтение/запись) и проверка `dmesg`    |
+| `test-params` | Тест параметров `top_n` и `track_src`, проверка `dmesg`    |
 | `deploy`      | Загрузка модуля + запуск `stats_exporter` docker-compose     |
 | `deploy-down` | Остановка `stats_exporter` docker-compose                    |
 
+## Параметры модуля
+
+| Параметр      | Тип    | Доступ | По умолчанию | Описание                                         |
+|---------------|--------|--------|-------------|--------------------------------------------------|
+| `top_n`       | int    | 0644   | 10          | Количество top адресов для вывода                 |
+| `top_addrs`   | string | 0444   | —           | Список top N адресов (только чтение)              |
+| `track_src`   | bool   | 0644   | false       | Если true — трафик считается по IP-источнику,<br/>иначе — по IP-назначения |
+
+
 ## Архитектура модуля
 
-```mermaid
-flowchart TB
-    subgraph Kernel["Пространство ядра"]
-        subgraph KM["kprobe_traffic.ko"]
-            KH["kprobe_handler.c<br/>kretprobes"] --> ST["stats.c<br/>Хеш-таблица + спинлок"]
-            ST --> PM["params.c<br/>Sysfs параметры"]
+```plantuml
+@startuml
+left to right direction
+skinparam packageStyle rectangle
 
-            subgraph Kprobes["kretprobes"]
-                SEND["tcp_sendmsg<br/>entry + ret handler"]
-                RECV["tcp_cleanup_rbuf<br/>entry + ret handler"]
-            end
+package "Пространство ядра" {
+  package "kprobe_traffic.ko" {
+    component "kprobe_handler.c" as KH <<kretprobes>>
+    component "stats.c\nХеш-таблица + спинлок" as ST
+    component "params.c\nSysfs параметры" as PM
 
-            SEND --> ST
-            RECV --> ST
-        end
-    end
+    component "tcp_sendmsg" as SEND <<entry + ret handler>>
+    component "tcp_cleanup_rbuf" as RECV <<entry + ret handler>>
 
-    subgraph User["Пространство пользователя"]
-        SYSFS["/sys/module/kprobe_traffic/<br/>parameters/top_addrs"]
-        CAT["cat / echo"]
-    end
+    SEND --> ST
+    RECV --> ST
+    KH --> ST
+    ST --> PM
+  }
+}
 
-    PM --> SYSFS
-    SYSFS --> CAT
+package "Пространство пользователя" {
+  component "/sys/module/kprobe_traffic/\nparameters/top_addrs" as SYSFS
+  component "cat / echo" as CAT
+}
+
+PM --> SYSFS
+SYSFS --> CAT
+@enduml
 ```
 
 ## Архитектура развёртывания
 
-```mermaid
-flowchart TB
-    subgraph Host["Хост"]
-        KM["kprobe_traffic.ko<br/>Модуль ядра"]
+```plantuml
+@startuml
+left to right direction
+skinparam packageStyle rectangle
 
-        subgraph Docker["Docker Compose"]
-            EXP["stats_exporter<br/>Go :2112"]
-            PROM["Prometheus<br/>:9090"]
-            GRAF["Grafana<br/>:3000"]
-        end
+package "Хост" {
+  component "kprobe_traffic.ko\nМодуль ядра" as KM
 
-        USER["Браузер<br/>http://localhost:3000"]
-    end
+  package "Docker Compose" {
+    component "stats_exporter\nGo :2112" as EXP
+    component "Prometheus\n:9090" as PROM
+    component "Grafana\n:3000" as GRAF
+  }
 
-    KM -. "sysfs bind mount (ro)" .-> EXP
-    EXP -->|"scrape /metrics"| PROM
-    PROM -->|"query"| GRAF
-    GRAF --> USER
+  component "Browser\nhttp://localhost:3000" as USER
+}
 
-    style KM fill:#4a6,color:#fff
-    style EXP fill:#48f,color:#fff
-    style PROM fill:#f84,color:#fff
-    style GRAF fill:#f4a,color:#fff
+KM ..> EXP : sysfs bind mount (ro)
+EXP --> PROM : scrape /metrics
+PROM --> GRAF : query
+GRAF --> USER
+@enduml
 ```
 

@@ -9,13 +9,8 @@
 #include "../inc/kprobe_traffic.h"
 #include "../inc/stats.h"
 
-static char probe_send[KSYM_NAME_LEN] = "tcp_sendmsg";
-module_param_string(probe_send, probe_send, KSYM_NAME_LEN, 0644);
-MODULE_PARM_DESC(probe_send, "function to probe for sent bytes");
-
-static char probe_recv[KSYM_NAME_LEN] = "tcp_cleanup_rbuf";
-module_param_string(probe_recv, probe_recv, KSYM_NAME_LEN, 0644);
-MODULE_PARM_DESC(probe_recv, "function to probe for received bytes");
+#define PROBE_SEND "tcp_sendmsg"
+#define PROBE_RECV "tcp_cleanup_rbuf"
 
 struct send_data {
   __be32 daddr;
@@ -110,27 +105,27 @@ static struct kretprobe kretp_recv = {
 };
 
 int kprobe_traffic_register(void) {
-  int ret;
+  kretp_send.kp.symbol_name = PROBE_SEND;
 
-  kretp_send.kp.symbol_name = probe_send;
-  ret = register_kretprobe(&kretp_send);
+  int ret = register_kretprobe(&kretp_send);
   if (ret < 0) {
-    pr_err("register_kretprobe(%s) failed: %d\n", probe_send, ret);
+    pr_err("register_kretprobe(%s) failed: %d\n", PROBE_SEND, ret);
+
     return ret;
   }
 
-  pr_info("planted kretprobe at %s: %p\n", probe_send, kretp_send.kp.addr);
+  pr_info("planted kretprobe at %s: %p\n", PROBE_SEND, kretp_send.kp.addr);
 
-  kretp_recv.kp.symbol_name = probe_recv;
+  kretp_recv.kp.symbol_name = PROBE_RECV;
 
   ret = register_kretprobe(&kretp_recv);
   if (ret < 0) {
-    pr_err("register_kretprobe(%s) failed: %d\n", probe_recv, ret);
+    pr_err("register_kretprobe(%s) failed: %d\n", PROBE_RECV, ret);
     unregister_kretprobe(&kretp_send);
     return ret;
   }
 
-  pr_info("planted kretprobe at %s: %p\n", probe_recv, kretp_recv.kp.addr);
+  pr_info("planted kretprobe at %s: %p\n", PROBE_RECV, kretp_recv.kp.addr);
 
   return 0;
 }
