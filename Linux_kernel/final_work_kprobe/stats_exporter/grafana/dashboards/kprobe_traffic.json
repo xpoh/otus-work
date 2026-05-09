@@ -74,7 +74,7 @@
           "refId": "A"
         }
       ],
-      "title": "Tracked IPs",
+      "title": "Tracked Sessions",
       "type": "stat"
     },
     {
@@ -166,12 +166,12 @@
           },
           "editorMode": "code",
           "expr": "kprobe_traffic_stats_traffic_bytes",
-          "legendFormat": "{{ip}} ({{direction}})",
+          "legendFormat": "{{src_ip}} → {{dst_ip}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Top 10 IPs by Traffic",
+      "title": "Top 10 Sessions by Traffic",
       "type": "timeseries"
     },
     {
@@ -323,12 +323,12 @@
           },
           "editorMode": "code",
           "expr": "rate(kprobe_traffic_stats_traffic_bytes[$__interval])",
-          "legendFormat": "{{ip}} ({{direction}})",
+          "legendFormat": "{{src_ip}} → {{dst_ip}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Top 10 IPs by Traffic",
+      "title": "Top 10 Sessions by Traffic",
       "type": "timeseries"
     }
   ],

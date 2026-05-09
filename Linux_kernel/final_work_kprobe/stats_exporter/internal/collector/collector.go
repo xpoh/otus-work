@@ -20,7 +20,6 @@ import (
 
 const (
 	sysfsTopAddrs = "/sys/module/kprobe_traffic/parameters/top_addrs"
-	sysfsTrackSrc = "/sys/module/kprobe_traffic/parameters/track_src"
 	namespace     = "kprobe_traffic"
 	subsystem     = "stats"
 )
@@ -41,9 +40,9 @@ func New() *Collector {
 				Namespace: namespace,
 				Subsystem: subsystem,
 				Name:      "traffic_bytes",
-				Help:      "Total traffic bytes per IP address (dst or src depending on track_src)",
+				Help:      "Total traffic bytes per session (src_ip : dst_ip)",
 			},
-			[]string{"ip", "direction"},
+			[]string{"src_ip", "dst_ip"},
 		),
 		topAddrs: promauto.NewGauge(
 			prometheus.GaugeOpts{
@@ -122,10 +121,8 @@ func (c *Collector) Update() error {
 		return err
 	}
 
-	direction := readDirection()
-
 	for _, e := range entries {
-		c.traffic.WithLabelValues(e.addr, direction).Set(float64(e.bytes))
+		c.traffic.WithLabelValues(e.src, e.dst).Set(float64(e.bytes))
 	}
 
 	c.topAddrs.Set(float64(len(entries)))
@@ -133,7 +130,8 @@ func (c *Collector) Update() error {
 }
 
 type entry struct {
-	addr  string
+	src   string
+	dst   string
 	bytes uint64
 }
 
@@ -154,14 +152,15 @@ func readTopAddrs() ([]entry, error) {
 			continue
 		}
 
-		parts := strings.SplitN(line, ": ", 2)
-		if len(parts) != 2 {
+		parts := strings.SplitN(line, ": ", 3)
+		if len(parts) != 3 {
 			log.Printf("malformed line: %s", line)
 			continue
 		}
 
-		addr := strings.TrimSpace(parts[0])
-		bytesStr := strings.TrimSpace(parts[1])
+		src := strings.TrimSpace(parts[0])
+		dst := strings.TrimSpace(parts[1])
+		bytesStr := strings.TrimSpace(parts[2])
 
 		bytes, err := strconv.ParseUint(bytesStr, 10, 64)
 		if err != nil {
@@ -169,7 +168,7 @@ func readTopAddrs() ([]entry, error) {
 			continue
 		}
 
-		entries = append(entries, entry{addr: addr, bytes: bytes})
+		entries = append(entries, entry{src: src, dst: dst, bytes: bytes})
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -177,18 +176,4 @@ func readTopAddrs() ([]entry, error) {
 	}
 
 	return entries, nil
-}
-
-func readDirection() string {
-	data, err := os.ReadFile(sysfsTrackSrc)
-	if err != nil {
-		return "dst"
-	}
-
-	val := strings.TrimSpace(string(data))
-	if val == "Y" || val == "1" {
-		return "src"
-	}
-
-	return "dst"
 }

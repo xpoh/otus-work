@@ -12,13 +12,14 @@
 
 struct addr_stat {
   struct hlist_node node;
-  __be32 addr;
+  __be32 saddr;
+  __be32 daddr;
   u64 bytes;
 };
 
 void stats_init(void);
 void stats_exit(void);
-void stats_record_traffic(__be32 daddr, size_t bytes);
+void stats_record_traffic(__be32 saddr, __be32 daddr, size_t bytes);
 void stats_get_top(char *buf, size_t len, int top_n);
 
 #endif // FINAL_WORK_KPROBE_STATS_H

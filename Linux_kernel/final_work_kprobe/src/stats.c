@@ -30,12 +30,13 @@ void stats_exit(void) {
   spin_unlock(&stats_lock);
 }
 
-void stats_record_traffic(__be32 daddr, size_t bytes) {
+void stats_record_traffic(__be32 saddr, __be32 daddr, size_t bytes) {
   struct addr_stat *entry;
+  u64 key = ((u64)saddr << 32) | (u32)daddr;
 
   spin_lock(&stats_lock);
-  hash_for_each_possible(addr_stats, entry, node, (u32)daddr) {
-    if (entry->addr == daddr) {
+  hash_for_each_possible(addr_stats, entry, node, key) {
+    if (entry->saddr == saddr && entry->daddr == daddr) {
       entry->bytes += bytes;
       spin_unlock(&stats_lock);
       return;
@@ -48,9 +49,10 @@ void stats_record_traffic(__be32 daddr, size_t bytes) {
     return;
   }
 
-  entry->addr = daddr;
+  entry->saddr = saddr;
+  entry->daddr = daddr;
   entry->bytes = bytes;
-  hash_add(addr_stats, &entry->node, (u32)daddr);
+  hash_add(addr_stats, &entry->node, key);
   spin_unlock(&stats_lock);
 }
 
@@ -99,8 +101,9 @@ void stats_get_top(char *buf, size_t len, int top_n) {
   sort(entries, allocated, sizeof(*entries), cmp_bytes_desc, NULL);
 
   for (i = 0; i < top_n && pos < len; i++) {
-    int n = scnprintf(buf + pos, len - pos, "%pI4: %llu\n",
-                      &entries[i]->addr, entries[i]->bytes);
+    int n = scnprintf(buf + pos, len - pos, "%pI4 : %pI4: %llu\n",
+                      &entries[i]->saddr, &entries[i]->daddr,
+                      entries[i]->bytes);
     if (!n)
       break;
     pos += n;
