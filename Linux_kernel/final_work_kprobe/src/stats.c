@@ -78,8 +78,10 @@ void stats_get_top(char *buf, size_t len, int top_n) {
   hash_for_each(addr_stats, bkt, entry, node) count++;
   spin_unlock(&stats_lock);
 
-  if (count == 0)
+  if (count == 0) {
+    buf[0] = '\0';
     return;
+  }
 
   if (top_n > count)
     top_n = count;

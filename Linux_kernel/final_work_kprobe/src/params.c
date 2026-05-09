@@ -4,13 +4,18 @@
 #include <linux/module.h>
 #include <linux/moduleparam.h>
 
+#include "../inc/param.h"
+#include "../inc/stats.h"
+
 static int top_n = 10;
 
 module_param(top_n, int, 0644);
 MODULE_PARM_DESC(top_n, "number of top addresses to report");
 
 static int top_addrs_get(char *buf, const struct kernel_param *kp) {
-  return snprintf(buf, PAGE_SIZE, "stub: no data yet\n");
+  buf[0] = '\0';
+  stats_get_top(buf, PAGE_SIZE, top_n);
+  return strlen(buf);
 }
 
 static const struct kernel_param_ops top_addrs_ops = {
