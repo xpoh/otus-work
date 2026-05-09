@@ -20,6 +20,7 @@ import (
 
 const (
 	sysfsTopAddrs = "/sys/module/kprobe_traffic/parameters/top_addrs"
+	sysfsTrackSrc = "/sys/module/kprobe_traffic/parameters/track_src"
 	namespace     = "kprobe_traffic"
 	subsystem     = "stats"
 )
@@ -40,9 +41,9 @@ func New() *Collector {
 				Namespace: namespace,
 				Subsystem: subsystem,
 				Name:      "traffic_bytes",
-				Help:      "Total traffic bytes per destination IP address",
+				Help:      "Total traffic bytes per IP address (dst or src depending on track_src)",
 			},
-			[]string{"dst_ip"},
+			[]string{"ip", "direction"},
 		),
 		topAddrs: promauto.NewGauge(
 			prometheus.GaugeOpts{
@@ -68,7 +69,7 @@ func (c *Collector) Start(ctx context.Context) error {
 		_, err := w.Write([]byte(`<html><body><h1>Kprobe Traffic Exporter</h1>
 <p><a href="/metrics">Metrics</a></p></body></html>`))
 		if err != nil {
-			_ = fmt.Errorf("error: %w", err)
+			log.Printf("write error: %v", err)
 		}
 	})
 
@@ -94,9 +95,8 @@ func (c *Collector) Start(ctx context.Context) error {
 
 				return nil
 			case <-t.C:
-				err := c.Update()
-				if err != nil {
-					return fmt.Errorf("update: %w", err)
+				if err := c.Update(); err != nil {
+					log.Printf("update error: %v", err)
 				}
 			}
 		}
@@ -122,8 +122,10 @@ func (c *Collector) Update() error {
 		return err
 	}
 
+	direction := readDirection()
+
 	for _, e := range entries {
-		c.traffic.WithLabelValues(e.addr).Set(float64(e.bytes))
+		c.traffic.WithLabelValues(e.addr, direction).Set(float64(e.bytes))
 	}
 
 	c.topAddrs.Set(float64(len(entries)))
@@ -154,6 +156,7 @@ func readTopAddrs() ([]entry, error) {
 
 		parts := strings.SplitN(line, ": ", 2)
 		if len(parts) != 2 {
+			log.Printf("malformed line: %s", line)
 			continue
 		}
 
@@ -162,6 +165,7 @@ func readTopAddrs() ([]entry, error) {
 
 		bytes, err := strconv.ParseUint(bytesStr, 10, 64)
 		if err != nil {
+			log.Printf("parse bytes error: %v", err)
 			continue
 		}
 
@@ -173,4 +177,18 @@ func readTopAddrs() ([]entry, error) {
 	}
 
 	return entries, nil
+}
+
+func readDirection() string {
+	data, err := os.ReadFile(sysfsTrackSrc)
+	if err != nil {
+		return "dst"
+	}
+
+	val := strings.TrimSpace(string(data))
+	if val == "Y" || val == "1" {
+		return "src"
+	}
+
+	return "dst"
 }

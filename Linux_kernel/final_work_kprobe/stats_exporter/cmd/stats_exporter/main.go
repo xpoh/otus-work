@@ -15,12 +15,11 @@ func main() {
 	col := collector.New()
 
 	go func() {
-		err := col.Start(ctx)
-		if err != nil {
+		if err := col.Start(ctx); err != nil {
 			return
 		}
-		defer col.Stop(ctx)
 	}()
 
 	<-ctx.Done()
+	col.Stop(context.Background())
 }

@@ -4,8 +4,8 @@
 #include <linux/module.h>
 #include <linux/moduleparam.h>
 
-#include "../inc/param.h"
-#include "../inc/stats.h"
+#include <param.h>
+#include <stats.h>
 
 static int top_n = 10;
 
@@ -24,7 +24,3 @@ static const struct kernel_param_ops top_addrs_ops = {
 
 module_param_cb(top_addrs, &top_addrs_ops, NULL, 0444);
 MODULE_PARM_DESC(top_addrs, "top N addresses by traffic (read only)");
-
-int params_init(void) { return 0; }
-
-void params_exit(void) {}
