@@ -1,6 +1,6 @@
 DRV_NAME := kprobe_traffic
 
-$(DRV_NAME)-y := src/main.o src/params.o
+$(DRV_NAME)-y := src/main.o src/params.o src/stats.o
 
 obj-m := $(DRV_NAME).o
 
