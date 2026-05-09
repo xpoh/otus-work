@@ -5,6 +5,9 @@
 #ifndef FINAL_WORK_KPROBE_STATS_H
 #define FINAL_WORK_KPROBE_STATS_H
 
+#define MAX_TOP_ADDRS 100
+#define ADDR_STATS_HASH_BITS 8
+
 struct addr_stat {
   struct hlist_node node;
   __be32 addr;

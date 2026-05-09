@@ -5,15 +5,25 @@
 #include <linux/module.h>
 
 #include "../inc/param.h"
+#include "../inc/stats.h"
 
 static int __init kprobe_traffic_init(void) {
   pr_info("init\n");
 
   int ret;
 
+  ret = stats_init();
+  if (ret) {
+    pr_err("failed to init stats\n");
+
+    return ret;
+  }
+
   ret = params_init();
   if (ret) {
     pr_err("failed to init params\n");
+
+    stats_exit();
 
     return ret;
   }
@@ -23,6 +33,7 @@ static int __init kprobe_traffic_init(void) {
 
 static void __exit kprobe_traffic_exit(void) {
   params_exit();
+  stats_exit();
 
   pr_info("exit\n");
 }
