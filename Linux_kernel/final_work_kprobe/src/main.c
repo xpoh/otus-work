@@ -4,34 +4,19 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 
-#include "../inc/param.h"
-#include "../inc/stats.h"
-#include "../inc/kprobe_traffic.h"
+#include <stats.h>
+#include <kprobe_traffic.h>
 
 static int __init kprobe_traffic_init(void) {
+  int ret;
+
   pr_info("init\n");
 
-  int ret = stats_init();
-  if (ret) {
-    pr_err("failed to init stats\n");
-
-    return ret;
-  }
-
-  ret = params_init();
-  if (ret) {
-    pr_err("failed to init params\n");
-
-    stats_exit();
-
-    return ret;
-  }
+  stats_init();
 
   ret = kprobe_traffic_register();
   if (ret) {
     pr_err("failed to register kprobes\n");
-
-    params_exit();
     stats_exit();
 
     return ret;
@@ -42,7 +27,6 @@ static int __init kprobe_traffic_init(void) {
 
 static void __exit kprobe_traffic_exit(void) {
   kprobe_traffic_unregister();
-  params_exit();
   stats_exit();
 
   pr_info("exit\n");

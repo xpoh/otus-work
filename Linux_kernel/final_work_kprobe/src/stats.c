@@ -7,15 +7,14 @@
 #include <linux/sort.h>
 #include <linux/spinlock.h>
 
-#include "../inc/stats.h"
+#include <stats.h>
 
 static DEFINE_HASHTABLE(addr_stats, ADDR_STATS_HASH_BITS);
 static DEFINE_SPINLOCK(stats_lock);
 
-int stats_init(void) {
+void stats_init(void) {
   hash_init(addr_stats);
   pr_debug("stats initialized\n");
-  return 0;
 }
 
 void stats_exit(void) {
@@ -72,36 +71,39 @@ void stats_get_top(char *buf, size_t len, int top_n) {
   int bkt;
   int count = 0;
   int pos = 0;
+  int allocated;
   int i;
 
+  entries = kmalloc_array(MAX_TOP_ADDRS, sizeof(*entries), GFP_KERNEL);
+  if (!entries)
+    return;
+
   spin_lock(&stats_lock);
-  hash_for_each(addr_stats, bkt, entry, node) count++;
+  hash_for_each(addr_stats, bkt, entry, node) {
+    if (count >= MAX_TOP_ADDRS)
+      break;
+    entries[count++] = entry;
+  }
   spin_unlock(&stats_lock);
 
   if (count == 0) {
     buf[0] = '\0';
+    kfree(entries);
     return;
   }
 
+  allocated = count;
   if (top_n > count)
     top_n = count;
-  if (top_n > MAX_TOP_ADDRS)
-    top_n = MAX_TOP_ADDRS;
 
-  entries = kmalloc_array(count, sizeof(*entries), GFP_KERNEL);
-  if (!entries)
-    return;
+  sort(entries, allocated, sizeof(*entries), cmp_bytes_desc, NULL);
 
-  count = 0;
-  spin_lock(&stats_lock);
-  hash_for_each(addr_stats, bkt, entry, node) entries[count++] = entry;
-  spin_unlock(&stats_lock);
-
-  sort(entries, count, sizeof(*entries), cmp_bytes_desc, NULL);
-
-  for (i = 0; i < top_n; i++) {
-    pos += scnprintf(buf + pos, len - pos, "%pI4: %llu\n", &entries[i]->addr,
-                     entries[i]->bytes);
+  for (i = 0; i < top_n && pos < len; i++) {
+    int n = scnprintf(buf + pos, len - pos, "%pI4: %llu\n",
+                      &entries[i]->addr, entries[i]->bytes);
+    if (!n)
+      break;
+    pos += n;
   }
 
   kfree(entries);

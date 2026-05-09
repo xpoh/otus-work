@@ -6,7 +6,7 @@ C_INCLUDE_PATH=$(KERNEL_DIR)
 DRV_NAME := kprobe_traffic
 include Kbuild
 
-.PHONY: all build run remove install uninstall clean format check restart test test-params
+.PHONY: all all-down build run remove install uninstall clean format check restart test test-params deploy deploy-down
 
 all: build run deploy
 
@@ -22,14 +22,14 @@ remove:
 	sudo rmmod $(DRV_NAME)
 
 install:
-	cp $(DRV_NAME).ko /lib/modules/$(shell uname -r)
-	/sbin/depmod -a
-	/sbin/modprobe $(DRV_NAME)
+	sudo cp $(DRV_NAME).ko /lib/modules/$(shell uname -r)
+	sudo /sbin/depmod -a
+	sudo /sbin/modprobe $(DRV_NAME)
 
 uninstall:
-	/sbin/modprobe -r $(DRV_NAME)
-	rm -f /lib/modules/$(shell uname -r)/$(DRV_NAME).ko
-	/sbin/depmod -a
+	sudo /sbin/modprobe -r $(DRV_NAME)
+	sudo rm -f /lib/modules/$(shell uname -r)/$(DRV_NAME).ko
+	sudo /sbin/depmod -a
 
 clean:
 	@cp stats_exporter/go.mod stats_exporter/go.mod.bak 2>/dev/null || true

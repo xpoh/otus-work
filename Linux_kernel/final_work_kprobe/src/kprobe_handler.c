@@ -6,18 +6,24 @@
 #include <net/inet_sock.h>
 #include <net/sock.h>
 
-#include "../inc/kprobe_traffic.h"
-#include "../inc/stats.h"
+#include <kprobe_traffic.h>
+#include <stats.h>
 
 #define PROBE_SEND "tcp_sendmsg"
 #define PROBE_RECV "tcp_cleanup_rbuf"
 
+static bool track_src;
+module_param(track_src, bool, 0644);
+MODULE_PARM_DESC(track_src, "track source IP instead of destination IP");
+
 struct send_data {
   __be32 daddr;
+  __be32 saddr;
 };
 
 struct recv_data {
   __be32 daddr;
+  __be32 saddr;
 };
 
 static int send_entry_handler(struct kretprobe_instance *ri,
@@ -33,9 +39,11 @@ static int send_entry_handler(struct kretprobe_instance *ri,
     struct sock *sk = (struct sock *)regs->di;
 
     data->daddr = inet_sk(sk)->inet_daddr;
+    data->saddr = inet_sk(sk)->inet_saddr;
   }
 #else
   data->daddr = 0;
+  data->saddr = 0;
 #endif
   return 0;
 }
@@ -46,9 +54,10 @@ static int send_ret_handler(struct kretprobe_instance *ri,
                             struct pt_regs *regs) {
   unsigned long retval = regs_return_value(regs);
   struct send_data *data = (struct send_data *)ri->data;
+  __be32 addr = track_src ? data->saddr : data->daddr;
 
-  if (retval > 0 && data->daddr)
-    stats_record_traffic(data->daddr, (size_t)retval);
+  if (retval > 0 && addr)
+    stats_record_traffic(addr, (size_t)retval);
 
   return 0;
 }
@@ -68,9 +77,11 @@ static int recv_entry_handler(struct kretprobe_instance *ri,
     struct sock *sk = (struct sock *)regs->di;
 
     data->daddr = inet_sk(sk)->inet_daddr;
+    data->saddr = inet_sk(sk)->inet_saddr;
   }
 #else
   data->daddr = 0;
+  data->saddr = 0;
 #endif
   return 0;
 }
@@ -81,9 +92,10 @@ static int recv_ret_handler(struct kretprobe_instance *ri,
                             struct pt_regs *regs) {
   unsigned long retval = regs_return_value(regs);
   struct recv_data *data = (struct recv_data *)ri->data;
+  __be32 addr = track_src ? data->saddr : data->daddr;
 
-  if (retval > 0 && data->daddr)
-    stats_record_traffic(data->daddr, (size_t)retval);
+  if (retval > 0 && addr)
+    stats_record_traffic(addr, (size_t)retval);
 
   return 0;
 }
@@ -105,9 +117,11 @@ static struct kretprobe kretp_recv = {
 };
 
 int kprobe_traffic_register(void) {
+  int ret;
+
   kretp_send.kp.symbol_name = PROBE_SEND;
 
-  int ret = register_kretprobe(&kretp_send);
+  ret = register_kretprobe(&kretp_send);
   if (ret < 0) {
     pr_err("register_kretprobe(%s) failed: %d\n", PROBE_SEND, ret);
 

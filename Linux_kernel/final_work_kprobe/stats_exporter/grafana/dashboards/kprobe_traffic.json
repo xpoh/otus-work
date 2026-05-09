@@ -166,12 +166,12 @@
           },
           "editorMode": "code",
           "expr": "kprobe_traffic_stats_traffic_bytes",
-          "legendFormat": "{{dst_ip}}",
+          "legendFormat": "{{ip}} ({{direction}})",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Top 10 Destination IPs by Traffic",
+      "title": "Top 10 IPs by Traffic",
       "type": "timeseries"
     },
     {
@@ -323,12 +323,12 @@
           },
           "editorMode": "code",
           "expr": "rate(kprobe_traffic_stats_traffic_bytes[$__interval])",
-          "legendFormat": "{{dst_ip}}",
+          "legendFormat": "{{ip}} ({{direction}})",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Top 10 Destination IPs by Traffic",
+      "title": "Top 10 IPs by Traffic",
       "type": "timeseries"
     }
   ],
