@@ -8,16 +8,18 @@ include Kbuild
 
 .PHONY: all build run remove install uninstall clean format check restart test test-params
 
-all: build
+all: build run deploy
+
+all-down: deploy-down remove clean
 
 build:
 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules
 
 run:
-	insmod $(PWD)/$(DRV_NAME).ko
+	sudo insmod $(PWD)/$(DRV_NAME).ko
 
 remove:
-	rmmod $(DRV_NAME)
+	sudo rmmod $(DRV_NAME)
 
 install:
 	cp $(DRV_NAME).ko /lib/modules/$(shell uname -r)
@@ -30,7 +32,11 @@ uninstall:
 	/sbin/depmod -a
 
 clean:
+	@cp stats_exporter/go.mod stats_exporter/go.mod.bak 2>/dev/null || true
+	@cp stats_exporter/go.sum stats_exporter/go.sum.bak 2>/dev/null || true
 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) clean
+	@mv stats_exporter/go.mod.bak stats_exporter/go.mod 2>/dev/null || true
+	@mv stats_exporter/go.sum.bak stats_exporter/go.sum 2>/dev/null || true
 
 format:
 	find . -name "*.c" -o -name "*.h" | xargs clang-format -i
@@ -61,3 +67,9 @@ test-params: build
 	sudo dmesg | tail -10
 	sudo rmmod $(DRV_NAME)
 	@echo "Test completed"
+
+deploy: run
+	docker compose -f ./stats_exporter/docker-compose.yaml up -d
+
+deploy-down:
+	docker compose -f ./stats_exporter/docker-compose.yaml down

@@ -7,5 +7,5 @@ RUN CGO_ENABLED=0 go build -o /stats_exporter ./cmd/stats_exporter
 
 FROM alpine:3.21
 COPY --from=builder /stats_exporter /stats_exporter
-EXPOSE 8080
+EXPOSE 2112
 ENTRYPOINT ["/stats_exporter"]
