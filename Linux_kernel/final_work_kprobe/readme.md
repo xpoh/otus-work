@@ -1,15 +1,10 @@
 # Тема проектной работы
 
-## "Разработка модуля ядра сбора статистики сетевых подключений - N адресов с самым большим количеством проходящего трафика»"
+## "Разработка модуля ядра сбора статистики сетевых подключений - N адресов с самым большим количеством прохождений"
 
 Ядро: **7.0.1**
-Исходный код ядра:
-
-[https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/)
-
-Пример kprobe: 
-
-[https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/samples/kprobes](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/samples/kprobes)
+Исходный код ядра: [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/)
+Пример kprobe: [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/samples/kprobes](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/samples/kprobes)
 
 ## Make цели
 
@@ -39,60 +34,50 @@
 
 ## Архитектура модуля
 
-```plantuml
-@startuml
-left to right direction
-skinparam packageStyle rectangle
-
-package "Пространство ядра" {
-  package "kprobe_traffic.ko" {
-    component "kprobe_handler.c" as KH <<kretprobes>>
-    component "stats.c\nХеш-таблица + спинлок" as ST
-    component "params.c\nSysfs параметры" as PM
-
-    component "tcp_sendmsg" as SEND <<entry + ret handler>>
-    component "tcp_cleanup_rbuf" as RECV <<entry + ret handler>>
-
-    SEND --> ST
-    RECV --> ST
-    KH --> ST
-    ST --> PM
-  }
-}
-
-package "Пространство пользователя" {
-  component "/sys/module/kprobe_traffic/\nparameters/top_addrs" as SYSFS
-  component "cat / echo" as CAT
-}
-
-PM --> SYSFS
-SYSFS --> CAT
-@enduml
+```mermaid
+graph LR
+    subgraph kernel["Пространство ядра"]
+        subgraph module["kprobe_traffic.ko"]
+            KH["kprobe_handler.c<br/>(kretprobes)"]
+            ST["stats.c<br/>Хеш-таблица + спинлок"]
+            PM["params.c<br/>Sysfs параметры"]
+            SEND["tcp_sendmsg<br/>(entry + ret handler)"]
+            RECV["tcp_cleanup_rbuf<br/>(entry + ret handler)"]
+            
+            SEND --> ST
+            RECV --> ST
+            KH --> ST
+            ST --> PM
+        end
+    end
+    
+    subgraph userspace["Пространство пользователя"]
+        SYSFS["/sys/module/kprobe_traffic/<br/>parameters/top_addrs"]
+        CAT["cat / echo"]
+    end
+    
+    PM --> SYSFS
+    SYSFS --> CAT
 ```
 
 ## Архитектура развёртывания
 
-```plantuml
-@startuml
-left to right direction
-skinparam packageStyle rectangle
-
-package "Хост" {
-  component "kprobe_traffic.ko\nМодуль ядра" as KM
-
-  package "Docker Compose" {
-    component "stats_exporter\nGo :2112" as EXP
-    component "Prometheus\n:9090" as PROM
-    component "Grafana\n:3000" as GRAF
-  }
-
-  component "Browser\nhttp://localhost:3000" as USER
-}
-
-KM ..> EXP : sysfs bind mount (ro)
-EXP --> PROM : scrape /metrics
-PROM --> GRAF : query
-GRAF --> USER
-@enduml
+```mermaid
+graph LR
+    subgraph host["Хост"]
+        KM["kprobe_traffic.ko<br/>Модуль ядра"]
+        
+        subgraph compose["Docker Compose"]
+            EXP["stats_exporter<br/>Go :2112"]
+            PROM["Prometheus<br/>:9090"]
+            GRAF["Grafana<br/>:3000"]
+        end
+        
+        USER["Browser<br/>http://localhost:3000"]
+    end
+    
+    KM -.->|sysfs bind mount ro| EXP
+    EXP -->|scrape /metrics| PROM
+    PROM -->|query| GRAF
+    GRAF --> USER
 ```
-
