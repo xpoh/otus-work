@@ -47,7 +47,7 @@ services:
       - final_project_default
 
   kafka:
-    image: docker.io/bitnami/kafka:4.0
+    image: docker.io/soldevelo/kafka:4.0
     ports:
       - "9092:9092"
     environment:
